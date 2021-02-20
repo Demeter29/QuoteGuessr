@@ -4,7 +4,6 @@ const message = require("../events/message");
 module.exports = (messages, guild) =>{
     
     for(let i=messages.length-1;i>=0;i--){
-        console.log(messages[i])
         if(messages[i].content.length<5 || messages[i].content.length>200){   //if the next message is a bot then its most likely a bot command.     
             messages.splice(i, 1);
         }

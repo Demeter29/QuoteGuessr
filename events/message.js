@@ -3,10 +3,6 @@ const client=require("../variables/client.js")
 module.exports = async (message) =>{
     
     if (message.author.bot) return;
-    const kada=[];
-    kada[message.channel.id]="5";
-    console.log(kada[message.channel.id]);
-
     const prefix=client.guildPrefixes.get(message.guild.id);
 
     const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`);
