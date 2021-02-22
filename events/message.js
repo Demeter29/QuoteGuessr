@@ -1,7 +1,6 @@
 const client=require("../variables/client.js")
 
 module.exports = async (message) =>{
-    
     if (message.author.bot) return;
     const prefix=client.guildPrefixes.get(message.guild.id);
 

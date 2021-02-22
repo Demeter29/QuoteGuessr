@@ -74,7 +74,7 @@ exports.run= async (message, args) =>{
     const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'guessMessage.png');
 
     const guessEmbed=new Discord.MessageEmbed()
-    .setAuthor(message.member.displayName, message.author.avatarURL())
+    .setAuthor(message.member.displayName, message.author.displayAvatarURL())
     .setTitle("Who wrote the following message?")
     .attachFiles(attachment)
     .setImage('attachment://guessMessage.png')
@@ -90,16 +90,25 @@ exports.run= async (message, args) =>{
         let correctAnswer=options.indexOf(randomUserID)+1;
         let correctAnswerString=`The correct answer was ${correctAnswer}: ${message.guild.members.resolve(randomUserID).displayName}`;
 
+        db.query(`UPDATE user SET single_games_played=single_games_played+1 WHERE user_id=${message.author.id}`).then(results=> {
+            if(results.affectedRows===0){
+                db.query(`INSERT INTO user (user_id, guild_id, single_games_played, single_games_won) VALUES(${message.member.id}, ${message.guild.id}, 1, 0)`);
+            }
+        });
         if(collected.size===0){
+            
             message.channel.send(`no reply in 30 seconds, game ended! ${correctAnswerString}`);
         }
         else{
             let answer=collected.first().content;
+  
             if(answer==correctAnswer){
-                message.channel.send("correct")
+                message.channel.send("correct");
+                db.query(`UPDATE user SET single_games_won=single_games_won+1`);
             }
             else{
-                message.channel.send("wrong, "+correctAnswerString)
+                message.channel.send("wrong, "+correctAnswerString);
+                
             }
             
         }     
@@ -151,7 +160,12 @@ exports.run= async (message, args) =>{
 }
 
 exports.config= {
-    name:"random",
+    name:"play",
     adminCmd:false,
 
+}
+
+exports.help={
+    description: "minigame",
+    usage: "play"
 }
