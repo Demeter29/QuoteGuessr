@@ -6,7 +6,7 @@ const setupFilter=require("../filters/setupFilter.js");
 const { DiscordAPIError } = require("discord.js");
 const downloadString="Beacuse Discord limits the speed we can cache messages we have to do it slowly which takes 1-3 minutes, you don't have to do anything else just wait. \n\n **Downloading Status**";
 
-client.toDownload=[]
+client.downloadQueue=[]
 exports.run = async (message, args) =>{
     const prefix=client.guildPrefixes.get(message.guild.id);
     if(args.length===0){
@@ -48,25 +48,19 @@ exports.run = async (message, args) =>{
             return;
         }
 
-
         const downloadEmbed=new Discord.MessageEmbed()
         .setTitle("Downloading...")
-        .setDescription(downloadString)
+        .setDescription(downloadString);
 
-        let downloadMessage=await message.channel.send(downloadEmbed)
+        let downloadMessage=await message.channel.send(downloadEmbed);
 
-        
-        
-        
-
-        console.log(client.toDownload)
-        if(client.toDownload.length>0){
+        if(client.downloadQueue.length>0){
             downloadEmbed.setDescription(downloadString+"\n Estimated remaining time: 2 minutes")
             downloadMessage.edit(downloadEmbed)
-            client.toDownload.push(function(){getAllMessages(channel)})
+            client.downloadQueue.push(function(){getAllMessages(channel)})
         }
         else{
-            client.toDownload.push(function(){getAllMessages(channel)})
+            client.downloadQueue.push(function(){getAllMessages(channel)})
             
             getAllMessages(channel) //message.guild.channels.resolve("729367696667443300")
         }
@@ -95,8 +89,8 @@ exports.run = async (message, args) =>{
                     message.channel.send(finishedEmbed)
 
                     //client.downloading=false;
-                    client.toDownload.splice(0, 1)           
-                    if(client.toDownload[0]) client.toDownload[0]();
+                    client.downloadQueue.splice(0, 1)           
+                    if(client.downloadQueue[0]) client.downloadQueue[0]();
     
                     messages=await setupFilter(messages);
                     messages = messages.reverse()
@@ -106,7 +100,7 @@ exports.run = async (message, args) =>{
                         
                     } 
                     db.query(`UPDATE guild set is_setup=true WHERE guild.id=${message.guild.id}`)
-                    db.query(`INSERT INTO channel_last_id VALUES(${channel.id},${channel.guild.id},${lastID})`)
+                    db.query(`INSERT INTO channel VALUES(${channel.id},${channel.guild.id},${lastID}, 1)`)
                     
                     return;
                 }
