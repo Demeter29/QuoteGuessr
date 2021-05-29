@@ -1,0 +1,2 @@
+winColor = #23ff00
+loseColor = #ff0830

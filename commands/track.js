@@ -15,7 +15,7 @@ exports.run = async(message,args)=>{
             show();
             break;
         default:
-            client.commands.get("help").run(message, args=["track"])
+            client.commands.get("help").run(message, ["track"])
             break;
     }
 
@@ -50,7 +50,7 @@ exports.run = async(message,args)=>{
     }
 
     async function show(){
-        const rows=await db.query(`SELECT id FROM channel WHERE is_tracked=1`).then( rows=>{return rows});
+        const rows=await db.query(`SELECT id FROM channel WHERE is_tracked=1 AND guild_id=${message.guild.id}`).then( rows=>{return rows});
         let output="```\r\n";
         for(row of rows){
             output+=message.guild.channels.resolve(row["id"]).name+"\r\n";
@@ -66,9 +66,19 @@ exports.run = async(message,args)=>{
 
 exports.config= {
     name:"track",
-    adminCmd:false
+    adminCmd:true
 }
 
 exports.help={
-    description: "When you track a channel all messages sent in that will automatically saved in the database"
+    description: "When you track a channel all messages sent in there will be automatically stored for the game, you can untrack a channel anytime and you can remove the messages with the remove command anytime.",
+    usage: [
+        "track add #channel",
+        "track remove #channel",
+        "track show"
+    ],
+    usageHelp: [
+        "add a channel to track",
+        "removes a channel from the tracked channels to no longer track",
+        "shows you the currently tracked channels"
+    ]
 }

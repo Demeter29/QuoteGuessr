@@ -2,8 +2,9 @@
     "token":"ODA5NjMxODkzNjI3OTk0MTI4.YCX6dQ.UkPwYrMiDJZ8lDysaLCx5cleClE",
     "defaultPrefix":"==",
     "devID":"269161773217611786",
+    "supportServerLink":"https://discord.gg/UCEJysf2Ym",
 
-    "dbUser":"doggi",
-    "dbPassword":"caster-die",
+    "dbUser":"root",
+    "dbPassword":"",
     "dbName":"guess_the_author"
 }

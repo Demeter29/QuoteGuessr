@@ -31,6 +31,7 @@ exports.config = {
 }
 
 exports.help = {
-    description: "removes the channel and its messages from the database",
-    usage: "remove"
+    description: "Removes the channel and its messages from the game.",
+    usage: ["remove #channel"],
+    usageHelp : [""]
 }

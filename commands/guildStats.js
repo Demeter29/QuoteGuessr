@@ -52,6 +52,7 @@ exports.config = {
 }
 
 exports.help = {
-    description: "shows you the statistics about your guilds.",
-    usage: "guildStats"
+    description: "Shows you statistics about the guild (server) where you are using the command.",
+    usage: ["guild"],
+    usageHelp : [""]
 }

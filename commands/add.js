@@ -57,7 +57,7 @@ exports.run = async(message, args) =>{
                 limit: 100,
                 ...(lastID && { before: lastID }),
             });
-            if (fetchedMessages.size === 0 || messages.length>=100) {                   
+            if (fetchedMessages.size === 0 || messages.length>=500) {                   
 
                 client.downloadQueue.splice(0, 1)           
                 if(client.downloadQueue[0]) client.downloadQueue[0]();
@@ -95,6 +95,7 @@ exports.config = {
 }
 
 exports.help = {
-    description: "adds another 500 message to the database",
-    usage: "add"
+    description: "Add another 500 messages to the game from the channel you mention.",
+    usage: ["add #channel"],
+    usageHelp : [""]
 }

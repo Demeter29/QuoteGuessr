@@ -1,5 +1,7 @@
+const Discord = require("discord.js");
 const client=require("../variables/client.js");
 const db=require("../database/db.js");
+const { DiscordAPIError } = require("discord.js");
 
 module.exports = async (message) =>{
 
@@ -25,7 +27,20 @@ module.exports = async (message) =>{
     const cmd = client.commands.get(command);
     if (!cmd) return;
     
-    if(cmd.config.adminCmd && !message.member.hasPermission("ADMINISTRATOR")) return message.channel.send("you don't have permissions for this command");
+    if(cmd.config.adminCmd && !(message.member.hasPermission("ADMINISTRATOR") || (message.member.id==client.config.devID)) ) return message.channel.send("you don't have permissions for this command");
+
+    let rows = await db.query(`SELECT is_setup FROM guild WHERE id=${message.guild.id}`).then(rows =>{return rows})
+    if(rows[0]["is_setup"]==0){
+        if(!(cmd.config.name=="setup" || cmd.config.name=="help" || cmd.config.name=="prefix")){
+            const notSetupEmbed=new Discord.MessageEmbed()
+            .setTitle("Your server has not been set up")
+            .setDescription(`Before you can play, you need to set up the server with the \`${prefix}setup\` command!`)
+            .setColor("#ff0830")
+
+            message.channel.send(notSetupEmbed)
+            return;
+        }
+    }
 
     cmd.run(message, args);
 

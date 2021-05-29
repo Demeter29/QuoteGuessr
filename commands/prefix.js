@@ -20,8 +20,8 @@ exports.config = {
 }
 
 exports.help = {
-    description: "changes the prefix in the guild",
-    usage: "prefix <new prefix>",
-    example: "prefix !"
+    description: "Changes the prefix in the server to something else. The prefix cannot contain spaces and it cannot be longer than 5 characters.",
+    usage: ["prefix <new prefix>"],
+    usageHelp : ["without the <>"]
 }
 

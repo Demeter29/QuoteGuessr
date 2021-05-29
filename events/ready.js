@@ -3,8 +3,8 @@ const db=require("../database/db.js");
 
 module.exports = async() => {
 
+  
   const guildsInCache= client.guilds.cache.map(guild => guild.id);
-  const guildsInDB=await db.query(`SELECT id,prefix FROM guild;`).then(rows =>{ return rows});
 
   //make sure every guild is in the database
   for await(guildID of guildsInCache){
@@ -16,16 +16,23 @@ module.exports = async() => {
   }
 
   //make sure every guild in the database is still valid(the bot is still in the guild) and also load their prefixes into memory
+  const guildsInDB=await db.query(`SELECT id,prefix FROM guild;`).then(rows =>{ return rows});
+
   client.guildPrefixes= new Map(); 
   for await(guild of guildsInDB){
     if(guildsInCache.includes(guild.id)){
       client.guildPrefixes.set(guild.id, guild.prefix);
     }
     else{
-      db.query(`DELETE FROM guild WHERE id=${guild.id};`)
-      db.query(`DELETE FROM message WHERE guild_id = ${guild.id}`)
+      db.query(`DELETE FROM guild WHERE id=${guild.id};`);
+      db.query(`DELETE FROM message WHERE guild_id = ${guild.id};`);
+      db.query(`DELETE FROM channel WHERE guild_id = ${guild.id};`);
+      db.query(`DELETE FROM user WHERE guild_id = ${guild.id};`);
     }
   }
+
+  //channels
+  const channelsInDB=await db.query(`SELECT id,prefix FROM guild;`).then(rows =>{ return rows});
 
   client.trackedChannels = new Array();
   const rows = await db.query(`SELECT id FROM channel WHERE is_tracked=true;`).then( rows =>{return rows});

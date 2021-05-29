@@ -5,7 +5,7 @@ exports.run = async (message, args) =>{
     const statsEmbed=new Discord.MessageEmbed()
     .setAuthor(message.member.displayName)
     .setTitle("Guess the Author User Statistics")
-    .addField("Single message games (won/played)", "`"+await getStat("single", "won")+"/"+await getStat("single", "played")+" ("+await getWinRate("single")+"%)`")
+    .addField("Single message games (won/played)", `points:${await getPoints()}     won/played:\`${await getStat("single", "won")}/${await getStat("single", "played")} (${+await getWinRate("single")}%)\``)
     .setThumbnail(message.author.displayAvatarURL())
     
     message.channel.send(statsEmbed);
@@ -30,6 +30,17 @@ exports.run = async (message, args) =>{
             return Math.round((won/played)*100)
         }
     }
+
+    async function getPoints(){
+        let rows= await db.query(`SELECT points FROM user WHERE user_id=${message.member.id} AND guild_id=${message.guild.id}`).then(rows =>{return rows})
+
+        if(rows.length>0){
+            return rows[0]["points"];
+        }
+        else{
+            return 0;
+        }
+    }
     
 }
 
@@ -40,6 +51,7 @@ exports.config = {
 }
 
 exports.help = {
-    description: "shows you your guild statistics",
-    usage: "stats",
+    description: "Shows you the statistics about you, how many points you have, how many games have you won, etc.",
+    usage: ["stats"],
+    usageHelp : [""]
 }
