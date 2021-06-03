@@ -1,6 +1,6 @@
-const client = require("../variables/client.JS");
+const client = require("../variables/client.js");
 const db=require("../database/db.js");
 
 module.exports = async (member) => {
-    let rows = await db.query(`DELETE FROM user WHERE user_id=${member.id} AND guild_id = ${member.guild.id}`);
+    let rows = await db.query(`DELETE FROM user WHERE user_id='${member.id}' AND guild_id = '${member.guild.id}'`);
 }

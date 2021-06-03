@@ -9,9 +9,9 @@ const disbut = require('discord-buttons')(client);
 exports.run = async (message, args) => {
     const prefix = client.guildPrefixes.get(message.guild.id);
 
-    let users = await db.query(`SELECT author_id, count(*) AS message_count FROM message WHERE guild_id=${message.guild.id} GROUP BY author_id, guild_id HAVING message_count>=10`).then(rows => {return rows});
+    let users = await db.query(`SELECT author_id, count(*) AS message_count FROM message WHERE guild_id='${message.guild.id}' GROUP BY author_id, guild_id HAVING message_count>=10`).then(rows => {return rows});
     for (let i = users.length - 1; i >= 0; i--) {
-        let msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id=${users[i]["author_id"]} AND guild_id=${message.guild.id}`).then(rows => {return rows});
+        let msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id='${users[i]["author_id"]}' AND guild_id='${message.guild.id}'`).then(rows => {return rows});
         msgs = singleMessageFilter(msgs, message.guild);
 
         if (msgs.length < 5) {
@@ -53,7 +53,7 @@ exports.run = async (message, args) => {
 
     shuffleArray(options);
 
-    let msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id=${randomUserID} AND guild_id=${message.guild.id}`).then(rows => {return rows});
+    let msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id='${randomUserID}' AND guild_id='${message.guild.id}'`).then(rows => {return rows});
     msgs = singleMessageFilter(msgs, message.guild);
 
     let randomMessage = msgs[Math.floor(Math.random() * ((msgs.length - 1) - 0 + 1)) + 0];
@@ -113,20 +113,26 @@ exports.run = async (message, args) => {
     let guessMessage = await message.channel.send({embed: guessEmbed, buttons: [buttonA, buttonB, buttonC]});
 
     //reply
-    const filter = (button) => (button.clicker.user.id === message.author.id);
-    const collector = guessMessage.createButtonCollector(filter, { max: 1, time: 30000 });
+    const filter = (button) => (true);
+    const collector = guessMessage.createButtonCollector(filter, { time: 30000 });
+
+    
 
     let correctAnswer = "abc".charAt(options.indexOf(randomUserID)); //+1 bcuz of indexing
     let correctAnswerString = `${correctAnswer.toUpperCase()}: ${message.guild.members.resolve(randomUserID).displayName}`;
 
     collector.on('collect', async button => {
         button.defer();
+        if(!(button.clicker.member.id==message.member.id)){
+            button.clicker.user.send(`Hi, you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the ${prefix}play command in the server **(not here!)**`)
+            return;
+        }
 
-        
+        collector.stop();
 
-        await db.query(`UPDATE user SET single_games_played=single_games_played+1, points = points-50 WHERE user_id=${message.author.id} AND guild_id=${message.guild.id}`).then(results => {
+        await db.query(`UPDATE user SET single_games_played=single_games_played+1, points = points-50 WHERE user_id='${message.author.id}' AND guild_id='${message.guild.id}'`).then(results => {
             if (results.affectedRows === 0) {
-                db.query(`INSERT INTO user (user_id, guild_id, single_games_played, points) VALUES(${message.member.id}, ${message.guild.id}, 1, -50)`);
+                db.query(`INSERT INTO user (user_id, guild_id, single_games_played, points) VALUES('${message.member.id}', '${message.guild.id}', 1, -50)`);
             }
         });
         
@@ -173,13 +179,13 @@ exports.run = async (message, args) => {
     
 
     async function win(){
-        await db.query(`UPDATE user SET single_games_won=single_games_won+1, current_winstreak = current_winstreak+1, points = points+150 WHERE guild_id=${message.guild.id} AND user_id = ${message.member.id}`);
+        await db.query(`UPDATE user SET single_games_won=single_games_won+1, current_winstreak = current_winstreak+1, points = points+150 WHERE guild_id='${message.guild.id}' AND user_id = '${message.member.id}'`);
         let currentWinstreak, points;
-        await db.query(`SELECT current_winstreak,highest_winstreak, points FROM user WHERE guild_id=${message.guild.id} AND user_id = ${message.member.id}`).then(rows =>{
+        await db.query(`SELECT current_winstreak,highest_winstreak, points FROM user WHERE guild_id='${message.guild.id}' AND user_id = '${message.member.id}'`).then(rows =>{
             let rowCurrentWinstreak= rows[0]["current_winstreak"];
 
             if(rowCurrentWinstreak>rows[0]["highest_winstreak"]){
-                db.query(`UPDATE user SET highest_winstreak = ${rowCurrentWinstreak}  WHERE guild_id=${message.guild.id} AND user_id = ${message.member.id}`);
+                db.query(`UPDATE user SET highest_winstreak = ${rowCurrentWinstreak}  WHERE guild_id='${message.guild.id}' AND user_id = '${message.member.id}'`);
             }
 
             currentWinstreak=rowCurrentWinstreak;
@@ -199,7 +205,7 @@ exports.run = async (message, args) => {
 
     async function lose(correctAnswerString){
         db.query(`UPDATE user SET current_winstreak = 0 WHERE guild_id=${message.guild.id} AND user_id = ${message.member.id}`);
-        let points= await db.query(`SELECT points FROM user WHERE user_id=${message.member.id} AND guild_id = ${message.guild.id}`).then(rows=>{return rows[0]["points"]} )
+        let points= await db.query(`SELECT points FROM user WHERE user_id='${message.member.id}' AND guild_id = '${message.guild.id}'`).then(rows=>{return rows[0]["points"]} )
 
          const loseEmbed = new Discord.MessageEmbed()
         .setTitle("Wrong!")
@@ -212,15 +218,19 @@ exports.run = async (message, args) => {
     }
 
     async function end(endMessage, embedWithoutButtons){
-        const filter = (button) => button.clicker.user.id === message.author.id;
-        const collector = endMessage.createButtonCollector(filter, { max: 1, time: 120000 });
+        const filter = (button) => (true);
+        const collector = endMessage.createButtonCollector(filter, {  time: 240000 });
 
-        collector.on('collect', b => {
-            b.defer();
+        collector.on('collect', button => {
+            button.defer();
 
-            let fakeMessage=b.message;
-            fakeMessage.member = b.clicker;
-            fakeMessage.author = b.clicker.user;
+            if(button.clicker.member.id==message.member.id){
+                collector.stop();
+            }
+
+            let fakeMessage=button.message;
+            fakeMessage.member = button.clicker;
+            fakeMessage.author = button.clicker.user;
             client.commands.get("play").run(fakeMessage);
         });
         collector.on('end', () =>{

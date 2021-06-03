@@ -4,8 +4,8 @@ const db=require("../database/db.js");
 const { DiscordAPIError } = require("discord.js");
 
 exports.run = async (message, args) =>{
-    let highestWinstreakOrdered = await db.query(`SELECT user_id, highest_winstreak FROM user WHERE guild_id = ${message.guild.id} ORDER BY highest_winstreak DESC`).then(rows =>{return rows});
-    let highestPointsOrdered = await db.query(`SELECT user_id, points FROM user WHERE guild_id = ${message.guild.id} ORDER BY points DESC`).then(rows =>{return rows});
+    let highestWinstreakOrdered = await db.query(`SELECT user_id, highest_winstreak FROM user WHERE guild_id = '${message.guild.id}' ORDER BY highest_winstreak DESC`).then(rows =>{return rows});
+    let highestPointsOrdered = await db.query(`SELECT user_id, points FROM user WHERE guild_id = '${message.guild.id}' ORDER BY points DESC`).then(rows =>{return rows});
 
     let highestWinstreakString = "`";
     let highestPointsString = "`";

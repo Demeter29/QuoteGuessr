@@ -3,7 +3,7 @@ const client= require("../variables/client.js")
 const db = require("../database/db.js");
 
 exports.run = async (message, args) =>{
-    console.log(client.trackedChannels.entries())
+    console.log( await client.shard.fetchClientValues("guilds.cache"));
    
     
     

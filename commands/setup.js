@@ -32,7 +32,7 @@ exports.run = async (message, args) =>{
    
 
     async function download(channel){
-        if(await db.query(`SELECT is_setup FROM guild WHERE id=${message.guild.id}`).then(results =>{return results[0]["is_setup"]})){
+        if(await db.query(`SELECT is_setup FROM guild WHERE id='${message.guild.id}'`).then(results =>{return results[0]["is_setup"]})){
             message.channel.send("this server is already set up!")
             return;
         }
@@ -93,8 +93,9 @@ exports.run = async (message, args) =>{
                             db.query("INSERT INTO message VALUES(?,?,?,?,?, FROM_UNIXTIME(?*0.001))", [message.id, message.author.id, message.content, message.channel.id, message.guild.id, message.createdTimestamp])
                             
                         } 
-                        db.query(`UPDATE guild set is_setup=true WHERE guild.id=${message.guild.id}`)
-                        db.query(`INSERT INTO channel VALUES(${channel.id},${channel.guild.id},${lastID}, 1)`)
+                        db.query(`UPDATE guild set is_setup=true WHERE guild.id='${message.guild.id}'`)
+                        db.query(`INSERT INTO channel VALUES('${channel.id}','${channel.guild.id}','${lastID}', 1)`)
+                        client.trackedChannels.push(channel.id);
                         
                         return;
                     }

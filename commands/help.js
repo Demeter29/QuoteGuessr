@@ -22,12 +22,12 @@ exports.run = async (message, args) =>{
         generalCommands+="```";
 
         let setupString="";
-        await db.query(`SELECT is_setup FROM guild WHERE id=${message.guild.id}`).then(rows=>{
+        await db.query(`SELECT is_setup FROM guild WHERE id='${message.guild.id}'`).then(rows=>{
             if(!rows[0]["is_setup"]){
                 setupString=`\n\n**IMPORTANT: You still haven't set up the server, before playing you have to do that with the \`${prefix}setup\` command!**`;
             }
             else{
-                setupString=`\n\nIf you just want to play then use ${prefix}play command.`
+                setupString=`\n\nIf you just want to play then use the ${prefix}play command.`
             }
         });
 

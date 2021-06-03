@@ -23,12 +23,12 @@ exports.run = async(message,args)=>{
         const channel=message.mentions.channels.first();
         if(!channel || !channel.viewable) return message.channel.send("The channel doesn't exist or I can't access it")
 
-        const channelRow= await db.query(`SELECT * FROM channel WHERE id=${channel.id}`).then(rows =>{return rows});
+        const channelRow= await db.query(`SELECT * FROM channel WHERE id='${channel.id}'`).then(rows =>{return rows});
         if(channelRow.length==0){
-            db.query(`INSERT INTO channel VALUES(${channel.id}, ${message.channel.id}, 0, 1)`);
+            db.query(`INSERT INTO channel VALUES('${channel.id}', '${message.channel.id}', 0, 1)`);
         }
         else{
-            db.query(`UPDATE channel SET is_tracked=1 WHERE id=${channel.id}`);
+            db.query(`UPDATE channel SET is_tracked=1 WHERE id='${channel.id}'`);
         }
 
         message.channel.send("The channel is now tracked!")
@@ -38,19 +38,19 @@ exports.run = async(message,args)=>{
         const channel=message.mentions.channels.first();
         if(!channel || !channel.viewable) return message.channel.send("The channel doesn't exist or I can't access it")
 
-        const channelRow= await db.query(`SELECT * FROM channel WHERE id=${channel.id}`).then(rows =>{return rows});
+        const channelRow= await db.query(`SELECT * FROM channel WHERE id='${channel.id}'`).then(rows =>{return rows});
         if(channelRow.length==0){
             return message.channel.send("the channel is not tracked!")
         }
         else{
-            db.query(`DELETE FROM channel WHERE id=${channel.id}`);
+            db.query(`DELETE FROM channel WHERE id='${channel.id}'`);
             message.channel.send("channel is now not tracked")
         }
 
     }
 
     async function show(){
-        const rows=await db.query(`SELECT id FROM channel WHERE is_tracked=1 AND guild_id=${message.guild.id}`).then( rows=>{return rows});
+        const rows=await db.query(`SELECT id FROM channel WHERE is_tracked=1 AND guild_id='${message.guild.id}'`).then( rows=>{return rows});
         let output="```\r\n";
         for(row of rows){
             output+=message.guild.channels.resolve(row["id"]).name+"\r\n";

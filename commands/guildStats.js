@@ -11,7 +11,7 @@ exports.run = async (message, args) =>{
     message.channel.send(guildStatsEmbed);
 
     async function getNumberOfMessages(){
-       let results= await db.query(`SELECT count(*) AS result FROM message GROUP BY guild_id HAVING guild_id=${message.guild.id}`).then(rows =>{return rows})
+       let results= await db.query(`SELECT count(*) AS result FROM message GROUP BY guild_id HAVING guild_id='${message.guild.id}'`).then(rows =>{return rows})
 
        if(!results.length){
            return 0;
@@ -22,7 +22,7 @@ exports.run = async (message, args) =>{
     }
 
     async function getNumberOfAuthors(){
-        let results= await db.query(`SELECT count(*) AS number_of_authors FROM (SELECT count(*) AS message_count FROM message WHERE guild_id=${message.guild.id} GROUP BY author_id HAVING message_count>100) AS author`).then(results =>{return results});
+        let results= await db.query(`SELECT count(*) AS number_of_authors FROM (SELECT count(*) AS message_count FROM message WHERE guild_id='${message.guild.id}' GROUP BY author_id HAVING message_count>100) AS author`).then(results =>{return results});
 
         if(!results.length){
             return 0;
@@ -33,7 +33,7 @@ exports.run = async (message, args) =>{
     }
 
     async function getNumberOfChannels(){
-        let results= await db.query(`SELECT COUNT(*) AS message_count, channel_id FROM message WHERE guild_id=${message.guild.id} GROUP BY channel_id`).then(rows =>{return rows})
+        let results= await db.query(`SELECT COUNT(*) AS message_count, channel_id FROM message WHERE guild_id='${message.guild.id}' GROUP BY channel_id`).then(rows =>{return rows})
 
         if(!results.length) return "`-`";
 

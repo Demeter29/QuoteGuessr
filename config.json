@@ -3,8 +3,9 @@
     "defaultPrefix":"==",
     "devID":"269161773217611786",
     "supportServerLink":"https://discord.gg/UCEJysf2Ym",
+    "numberOfShards": 3,
 
     "dbUser":"root",
     "dbPassword":"",
-    "dbName":"guess_the_author"
+    "dbName":"quote_guessr"
 }

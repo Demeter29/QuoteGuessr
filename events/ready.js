@@ -3,43 +3,35 @@ const db=require("../database/db.js");
 
 module.exports = async() => {
 
-  
-  const guildsInCache= client.guilds.cache.map(guild => guild.id);
-
-  //make sure every guild is in the database
-  for await(guildID of guildsInCache){
-    const rows=await db.query(`SELECT id FROM guild WHERE id=${guildID};`).then(rows=>{return rows});
-
-    if(rows.length===0){   
-      await db.query(`INSERT INTO guild VALUES('${guildID}', '${client.config.defaultPrefix}', 0);`); 
-    }
-  }
-
-  //make sure every guild in the database is still valid(the bot is still in the guild) and also load their prefixes into memory
-  const guildsInDB=await db.query(`SELECT id,prefix FROM guild;`).then(rows =>{ return rows});
-
+  const guildsInCache = client.guilds.cache.values();
   client.guildPrefixes= new Map(); 
-  for await(guild of guildsInDB){
-    if(guildsInCache.includes(guild.id)){
-      client.guildPrefixes.set(guild.id, guild.prefix);
-    }
-    else{
-      db.query(`DELETE FROM guild WHERE id=${guild.id};`);
-      db.query(`DELETE FROM message WHERE guild_id = ${guild.id};`);
-      db.query(`DELETE FROM channel WHERE guild_id = ${guild.id};`);
-      db.query(`DELETE FROM user WHERE guild_id = ${guild.id};`);
-    }
+  for await (guild of guildsInCache){
+    await db.query(`SELECT * FROM guild WHERE id='${guild.id}';`)
+    .then(async (rows) => {
+      if(rows.length==0){
+        await db.query(`INSERT INTO guild VALUES('${guild.id}', '${client.config.defaultPrefix}', 0);`); 
+        client.guildPrefixes.set(guild.id, client.config.defaultPrefix);
+      }
+      else{
+        const prefix = await db.query(`SELECT prefix FROM guild WHERE id='${guild.id}';`).then(rows =>{return rows[0]["prefix"]});
+        client.guildPrefixes.set(guild.id, prefix);
+      }
+    });
+
   }
 
   //channels
-  const channelsInDB=await db.query(`SELECT id,prefix FROM guild;`).then(rows =>{ return rows});
-
   client.trackedChannels = new Array();
-  const rows = await db.query(`SELECT id FROM channel WHERE is_tracked=true;`).then( rows =>{return rows});
-  for(row of rows){
-    client.trackedChannels.push(row["id"]);
+  const channelsInCache = client.channels.cache.values();
+  for await(channel of channelsInCache){
+    await db.query(`SELECT id, is_tracked FROM channel WHERE id='${channel.id}';`)
+    .then(rows =>{
+      if(rows.length > 0 && rows[0]["is_tracked"] == 1){
+        console.log("added channel: "+channel.id)
+        client.trackedChannels.push(rows[0]["id"]);
+      }
+    })
   }
 
   client.user.setActivity(`${client.config.defaultPrefix}help`, {type: "WATCHING"});
-  console.log(client.user.username+" is ready")
 };

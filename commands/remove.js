@@ -19,8 +19,8 @@ exports.run= async (message, args) =>{
     }
 
     let channelName=channel.name;
-    await db.query(`DELETE FROM channel WHERE id=${channel.id}`);
-    await db.query(`DELETE FROM message WHERE channel_id=${channel.id}`);
+    await db.query(`DELETE FROM channel WHERE id='${channel.id}'`);
+    await db.query(`DELETE FROM message WHERE channel_id='${channel.id}'`);
 
     message.channel.send(channelName+" has been removed from the database")
 }

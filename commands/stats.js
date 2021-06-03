@@ -11,7 +11,7 @@ exports.run = async (message, args) =>{
     message.channel.send(statsEmbed);
 
     async function getStat(mode, type){
-       let result= await db.query(`SELECT ${mode}_games_${type} AS result FROM user WHERE user_id=${message.author.id} AND guild_id=${message.guild.id}`).then( rows=>{return rows});
+       let result= await db.query(`SELECT ${mode}_games_${type} AS result FROM user WHERE user_id='${message.author.id}' AND guild_id='${message.guild.id}'`).then( rows=>{return rows});
 
        if(result.length===0){
            return 0;
@@ -32,7 +32,7 @@ exports.run = async (message, args) =>{
     }
 
     async function getPoints(){
-        let rows= await db.query(`SELECT points FROM user WHERE user_id=${message.member.id} AND guild_id=${message.guild.id}`).then(rows =>{return rows})
+        let rows= await db.query(`SELECT points FROM user WHERE user_id='${message.member.id}' AND guild_id='${message.guild.id}'`).then(rows =>{return rows})
 
         if(rows.length>0){
             return rows[0]["points"];

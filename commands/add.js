@@ -42,7 +42,7 @@ exports.run = async(message, args) =>{
     async function addMessages(channel){
         let messages = [];
         let lastID;
-        let rows=await db.query(`SELECT last_id FROM channel WHERE id=${channel.id}`).then(rows =>{return rows});
+        let rows=await db.query(`SELECT last_id FROM channel WHERE id='${channel.id}'`).then(rows =>{return rows});
         if(rows.length===0 || rows[0]["last_id"]==0){
             lastID=await channel.messages.fetch({limit: 1}).then(messages =>{return messages.entries().next().value[0]})
         }
@@ -69,12 +69,12 @@ exports.run = async(message, args) =>{
                     db.query("INSERT INTO message VALUES(?,?,?,?,?, FROM_UNIXTIME(?*0.001))", [message.id, message.author.id, message.content, message.channel.id, message.guild.id, message.createdTimestamp])
                     
                 }
-                if(await db.query(`SELECT * FROM channel WHERE id=${channel.id}`).then(rows =>{return rows}));
+                if(await db.query(`SELECT * FROM channel WHERE id='${channel.id}'`).then(rows =>{return rows}));
                 if(rows.length===0){
-                    await db.query(`INSERT INTO channel VALUES(${channel.id},${channel.guild.id},${lastID}, 1)`)
+                    await db.query(`INSERT INTO channel VALUES('${channel.id}','${channel.guild.id}','${lastID}', 1)`)
                 }
                 else{
-                    await db.query(`UPDATE channel SET last_id=${lastID} WHERE id=${channel.id}`)
+                    await db.query(`UPDATE channel SET last_id='${lastID}' WHERE id='${channel.id}'`)
                 }
                 
                 
