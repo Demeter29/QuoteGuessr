@@ -1,8 +1,8 @@
+//this event emits when all the shards are loaded in (it emits only once).
 const client=require("../variables/client.js");
 const db=require("../database/db.js");
 
 module.exports = async() => {
-    //make sure every guild is in the database
     
     //make sure every guild in the database is still valid
     const guildsInDB = await db.query(`SELECT id FROM guild;`).then(rows =>{ return rows});

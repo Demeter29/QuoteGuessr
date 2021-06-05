@@ -9,7 +9,7 @@ const db=mysql.createConnection({
 
 db.connect(err=>{
     if(err) throw err;
-    console.log("connected to database")
+    console.log(`Shard ${client.shard.ids} connected to database`)
 })
 
 function query(sql, inserts){

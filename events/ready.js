@@ -27,7 +27,6 @@ module.exports = async() => {
     await db.query(`SELECT id, is_tracked FROM channel WHERE id='${channel.id}';`)
     .then(rows =>{
       if(rows.length > 0 && rows[0]["is_tracked"] == 1){
-        console.log("added channel: "+channel.id)
         client.trackedChannels.push(rows[0]["id"]);
       }
     })

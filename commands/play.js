@@ -64,7 +64,7 @@ exports.run = async (message, args) => {
     ctx.font = "bold 25px arial, sans-serif ";
     ctx.fillStyle = "#c7d9df"
 
-    const background = await Canvas.loadImage("./resources/singleMessagev1.png");
+    const background = await Canvas.loadImage("./resources/singleMessage.png");
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
     const lines = getLines(ctx, randomMessage["content"], 561);
@@ -85,30 +85,30 @@ exports.run = async (message, args) => {
      //buttons
     
     let buttonA = new disbut.MessageButton()
-    .setStyle('blurple') //default: blurple
-    .setLabel('A') //default: NO_LABEL_PROVIDED
-    .setID('a') //note: if you use the style "url" you must provide url using .setURL('https://example.com')
+    .setStyle('blurple')
+    .setLabel('A')
+    .setID('a'); 
 
     let buttonB = new disbut.MessageButton()
-    .setStyle('blurple') //default: blurple
-    .setLabel('B') //default: NO_LABEL_PROVIDED
-    .setID('b') //note: if you use the style "url" you must provide url using .setURL('https://example.com')
+    .setStyle('blurple') 
+    .setLabel('B') 
+    .setID('b');
 
     let buttonC = new disbut.MessageButton()
-    .setStyle('blurple') //default: blurple
-    .setLabel('C') //default: NO_LABEL_PROVIDED
-    .setID('c') //note: if you use the style "url" you must provide url using .setURL('https://example.com')
+    .setStyle('blurple') 
+    .setLabel('C') 
+    .setID('c');
 
     let playAgainButton = new disbut.MessageButton()
-    .setStyle('blurple') //default: blurple
-    .setLabel('Play Again!') //default: NO_LABEL_PROVIDED
-    .setID('playAgain') //note: if you use the style "url" you must provide url using .setURL('https://example.com')
+    .setStyle('blurple') 
+    .setLabel('Play Again!') 
+    .setID('playAgain');
 
     const guessEmbed = new Discord.MessageEmbed()
         .setAuthor("playing: " + message.member.displayName, message.author.displayAvatarURL())
         .setTitle("Who wrote the following message?")
         .attachFiles(attachment)
-        .setImage('attachment://guessMessage.png')
+        .setImage('attachment://guessMessage.png');
 
     let guessMessage = await message.channel.send({embed: guessEmbed, buttons: [buttonA, buttonB, buttonC]});
 
@@ -116,15 +116,13 @@ exports.run = async (message, args) => {
     const filter = (button) => (true);
     const collector = guessMessage.createButtonCollector(filter, { time: 30000 });
 
-    
-
-    let correctAnswer = "abc".charAt(options.indexOf(randomUserID)); //+1 bcuz of indexing
+    let correctAnswer = "abc".charAt(options.indexOf(randomUserID));
     let correctAnswerString = `${correctAnswer.toUpperCase()}: ${message.guild.members.resolve(randomUserID).displayName}`;
 
     collector.on('collect', async button => {
         button.defer();
         if(!(button.clicker.member.id==message.member.id)){
-            button.clicker.user.send(`Hi, you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the ${prefix}play command in the server **(not here!)**`)
+            button.clicker.user.send(`Hi, you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the ${prefix}play command in the server **(not here!)**`);
             return;
         }
 
@@ -171,7 +169,7 @@ exports.run = async (message, args) => {
         }
 
 
-        guessMessage.edit( {embed: guessEmbed, buttons: [buttonA, buttonB, buttonC]})
+        guessMessage.edit( {embed: guessEmbed, buttons: [buttonA, buttonB, buttonC]});
     });
 
     
@@ -211,7 +209,7 @@ exports.run = async (message, args) => {
         .setTitle("Wrong!")
         .setColor("#ff0830")
         .setDescription(`The correct answer was: ${correctAnswerString}\n\nYou lost 50 points (total: ${points})`)
-        .setAuthor("playing: "+message.member.displayName, message.author.displayAvatarURL())
+        .setAuthor("playing: "+message.member.displayName, message.author.displayAvatarURL());
 
         let endMessage = await message.channel.send( {button: playAgainButton, embed: loseEmbed});
         end(endMessage, loseEmbed);
@@ -236,7 +234,7 @@ exports.run = async (message, args) => {
         collector.on('end', () =>{
             playAgainButton.setDisabled();
 
-            endMessage.edit( {embed: embedWithoutButtons, button: playAgainButton})
+            endMessage.edit( {embed: embedWithoutButtons, button: playAgainButton});
         });
         
     }
