@@ -4,7 +4,7 @@ const db=require("../database/db.js");
 const Discord=require("discord.js")
 const setupFilter=require("../filters/setupFilter.js");
 const { DiscordAPIError } = require("discord.js");
-const downloadString="We are caching messages right now this should take 1-3 minutes, you don't have to do anything else just wait. \n\n **Downloading Status**";
+const downloadString="We are caching messages right now. This should take 1-3 minutes, you don't have to do anything else just wait. \n\n **Downloading Status**";
 
 client.downloadQueue=[]
 exports.run = async (message, args) =>{

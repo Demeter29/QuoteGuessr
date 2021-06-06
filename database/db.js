@@ -1,25 +1,19 @@
 const mysql=require("mysql2");
 const client=require("../variables/client.js")
 
-const db=mysql.createConnection({
+const db =mysql.createPool({
     user: client.config.dbUser,
     password: client.config.dbPassword,
-    database:client.config.dbName
+    database: client.config.dbName
 });
 
-db.connect(err=>{
-    if(err) throw err;
-    console.log(`Shard ${client.shard.ids} connected to database`)
-})
-
 function query(sql, inserts){
-    return new Promise( (resolve) =>{ //no rejection!
+    return new Promise( (resolve) =>{ //TODO: no rejection!
         db.query(sql, inserts, (err, rows) =>{        
             if(err){
-                console.log(err);
-                if(!client.users.resolve(client.config.devID)) return; // if dev not in a guild with dev
-                client.users.resolve(client.config.devID).send("!!ERROR: probably database error: "+err); 
-                
+                console.log("Database error: "+err);
+                if(!client.users.resolve(client.config.devID)) return; // dev and bot must be on a server together
+                client.users.resolve(client.config.devID).send("Database error: "+err); 
             }
             else resolve(rows);                               
         });

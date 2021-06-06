@@ -114,7 +114,7 @@ exports.run = async (message, args) => {
 
     //reply
     const filter = (button) => (true);
-    const collector = guessMessage.createButtonCollector(filter, { time: 30000 });
+    const collector = guessMessage.createButtonCollector(filter, { time: 60000 });
 
     let correctAnswer = "abc".charAt(options.indexOf(randomUserID));
     let correctAnswerString = `${correctAnswer.toUpperCase()}: ${message.guild.members.resolve(randomUserID).displayName}`;
