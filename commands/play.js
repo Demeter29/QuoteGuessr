@@ -168,8 +168,17 @@ exports.run = async (message, args) => {
             break;
         }
 
-
         guessMessage.edit( {embed: guessEmbed, buttons: [buttonA, buttonB, buttonC]});
+
+        if(collected.size==0){
+            const timesUpEmbed = new Discord.MessageEmbed()
+            .setAuthor("playing: "+message.member.displayName, message.author.displayAvatarURL())
+            .setTitle("Time's up!")
+            .setDescription("You took the maximum of 60 seconds to guess")
+            .setColor("#ff0830");
+
+            message.channel.send({embed: timesUpEmbed, button: playAgainButton});
+        }
     });
 
     
@@ -208,7 +217,7 @@ exports.run = async (message, args) => {
          const loseEmbed = new Discord.MessageEmbed()
         .setTitle("Wrong!")
         .setColor("#ff0830")
-        .setDescription(`The correct answer was: ${correctAnswerString}\n\nYou lost 50 points (total: ${points})`)
+        .setDescription(`The correct answer was ${correctAnswerString}\n\nYou lost 50 points (total: ${points})`)
         .setAuthor("playing: "+message.member.displayName, message.author.displayAvatarURL());
 
         let endMessage = await message.channel.send( {button: playAgainButton, embed: loseEmbed});

@@ -11,7 +11,6 @@ module.exports = (messages) =>{
 
 
     for(message of messages){
-        console.log(message.content)
     }
 
     return messages

@@ -5,8 +5,9 @@ const Discord=require("discord.js")
 const setupFilter=require("../filters/setupFilter.js");
 const { DiscordAPIError } = require("discord.js");
 const downloadString="We are caching messages right now. This should take 1-3 minutes, you don't have to do anything else just wait. \n\n **Downloading Status**";
+const fetchMessages = require("../scripts/fetchMessages.js");
 
-client.downloadQueue=[]
+client.fetchingQueue=[];
 exports.run = async (message, args) =>{
     const prefix=client.guildPrefixes.get(message.guild.id);
     if(args.length===0){
@@ -24,7 +25,6 @@ exports.run = async (message, args) =>{
             return message.channel.send("I can't access the channel");
         }
 
-        
         download(channel)
         
         
@@ -43,19 +43,19 @@ exports.run = async (message, args) =>{
 
         let downloadMessage=await message.channel.send(downloadEmbed);
 
-        if(client.downloadQueue.length>0){
+        
+        if(client.fetchingQueue.length>0){
             downloadEmbed.setDescription(downloadString+"\n Estimated remaining time: 2 minutes")
             downloadMessage.edit(downloadEmbed)
-            client.downloadQueue.push(function(){getAllMessages(channel)})
+            client.fetchingQueue.push(function(){getAllMessages(channel)})
+            console.log(`fetch queue: ${await client.shard.fetchClientValues("fetchingQueue.length")}`);
         }
         else{
-            client.downloadQueue.push(function(){getAllMessages(channel)})
-            
-            
-            await getAllMessages(channel) //message.guild.channels.resolve("729367696667443300")
-            
-            
+            client.fetchingQueue.push(function(){getAllMessages(channel)}) 
+            console.log(`fetch queue: ${await client.shard.fetchClientValues("fetchingQueue.length")}`);        
+            await getAllMessages(channel)
         }
+        
     
         async function getAllMessages(channel){
             downloadEmbed.setDescription(downloadString+"\n Estimated remaining time: 60 seconds")
@@ -64,68 +64,44 @@ exports.run = async (message, args) =>{
             //client.downloading=true;
             let messages = [];
             let lastID;
-    
-            let startTime=Date.now();
-            
-            while (true) { 
-                try{
-                    const fetchedMessages = await channel.messages.fetch({
-                        limit: 100,
-                        ...(lastID && { before: lastID }),
-                    });
+
+            fetchMessages(message.channel, 5000).then( async result =>{
+                messages = result.messages;
+                lastID = result.lastID;
+
+                downloadEmbed.setDescription(downloadString+"\n Finished!");
+                downloadMessage.edit(downloadEmbed)
+                const finishedEmbed=new Discord.MessageEmbed()
+                .setTitle("Setup finished!")
+                .setDescription("Everything is done, now you can start playing!")
+                message.channel.send(finishedEmbed)
+
+                
+                messages=await setupFilter(messages);
+                messages = messages.reverse();
+                for(message of messages){
+                    db.query("INSERT INTO message VALUES(?,?,?,?,?, FROM_UNIXTIME(?*0.001))", [message.id, message.author.id, message.content, message.channel.id, message.guild.id, message.createdTimestamp])
                     
-                    if (fetchedMessages.size === 0 || messages.length>=5000) {                   
-                        downloadEmbed.setDescription(downloadString+"\n Finished!");
-                        downloadMessage.edit(downloadEmbed)
-                        const finishedEmbed=new Discord.MessageEmbed()
-                        .setTitle("Setup finished!")
-                        .setDescription("Everything is done, now you can start playing!")
-                        message.channel.send(finishedEmbed)
+                } 
+                db.query(`UPDATE guild set is_setup=true WHERE guild.id='${message.guild.id}'`)
+                db.query(`INSERT INTO channel VALUES('${channel.id}','${channel.guild.id}','${lastID}', 1)`)
+                client.trackedChannels.push(channel.id);
+            }).catch( () =>{
+                const errorEmbed = new Discord.MessageEmbed()
+                .setTitle("Error")
+                .setDescription(`Sorry but we couldn't set up the server! Try again in a few minutes or join our [support server](${client.config.supportServerLink}) for help `)
+                .setColor("#ff0830")
 
-                        //client.downloading=false;
-                        client.downloadQueue.splice(0, 1)           
-                        if(client.downloadQueue[0]) client.downloadQueue[0]();
-        
-                        messages=await setupFilter(messages);
-                        messages = messages.reverse()
-                        for(message of messages){
-                            //console.log(message.content)
-                            db.query("INSERT INTO message VALUES(?,?,?,?,?, FROM_UNIXTIME(?*0.001))", [message.id, message.author.id, message.content, message.channel.id, message.guild.id, message.createdTimestamp])
-                            
-                        } 
-                        db.query(`UPDATE guild set is_setup=true WHERE guild.id='${message.guild.id}'`)
-                        db.query(`INSERT INTO channel VALUES('${channel.id}','${channel.guild.id}','${lastID}', 1)`)
-                        client.trackedChannels.push(channel.id);
-                        
-                        return;
-                    }
-                    messages = messages.concat(Array.from(fetchedMessages.values()));
-                    if(messages.length===2000){
-                        downloadEmbed.setDescription(downloadString+"\n Estimated remaining time: 30 seconds");
-                        downloadMessage.edit(downloadEmbed)
-                    }
-                    else if(messages.length===4000){
-                        downloadEmbed.setDescription(downloadString+"\n Estimated remaining time: 15 seconds");
-                        downloadMessage.edit(downloadEmbed)
-                    }
-                    lastID = fetchedMessages.lastKey();
-                    console.log((Date.now()-startTime)/1000+": "+messages.length)
-                    await asleep(1200);
+                message.channel.send(errorEmbed);
+                
+            }).finally( async () =>{
+                client.fetchingQueue.splice(0, 1)           
+                if(client.fetchingQueue[0]) {
+                    client.fetchingQueue[0]()
                 }
-                catch(error){
-                    const errorEmbed = new Discord.MessageEmbed()
-                    .setTitle("Error")
-                    .setDescription(`Sorry but we couldn't set up the server! Try again in a few minutes or join our [support server](${client.config.supportServerLink}) for help `)
-                    .setColor("#ff0830")
-
-                    message.channel.send(errorEmbed);
-                    client.downloadQueue.splice(0, 1)           
-                    if(client.downloadQueue[0]) client.downloadQueue[0]();
-
-                    return;
-                }
-                     
-            }
+                console.log(`fetch queue: ${await client.shard.fetchClientValues("fetchingQueue.length")}`);
+            })
+                                             
         }
     }
     

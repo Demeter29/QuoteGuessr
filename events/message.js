@@ -4,13 +4,13 @@ const db=require("../database/db.js");
 const { DiscordAPIError } = require("discord.js");
 
 module.exports = async (message) =>{
-    console.log(client.trackedChannels)
+
     if(client.trackedChannels.includes(message.channel.id)){
         await db.query("INSERT INTO message VALUES(?,?,?,?,?, FROM_UNIXTIME(?*0.001))", [message.id, message.author.id, message.content, message.channel.id, message.guild.id, message.createdTimestamp]);
     }
 
     if (message.author.bot) return;
-    if(!message.guild) return message.channel.send("Sorry, I don't take dms :)");
+    if(!message.guild) return;
     const prefix=client.guildPrefixes.get(message.guild.id);
 
     const prefixMention = new RegExp(`^<@!?${client.user.id}>( |)$`);

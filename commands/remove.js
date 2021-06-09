@@ -18,11 +18,15 @@ exports.run= async (message, args) =>{
         }
     }
 
-    let channelName=channel.name;
     await db.query(`DELETE FROM channel WHERE id='${channel.id}'`);
     await db.query(`DELETE FROM message WHERE channel_id='${channel.id}'`);
 
-    message.channel.send(channelName+" has been removed from the database")
+    if(client.trackedChannels.includes(channel.id)){
+        var index = client.trackedChannels.indexOf(channel.id);
+        client.trackedChannels.splice(index, 1);      
+    }
+
+    message.channel.send(channel.name+" has been removed from the database")
 }
 
 exports.config = {

@@ -3,7 +3,7 @@
     "defaultPrefix":"==",
     "devID":"269161773217611786",
     "supportServerLink":"https://discord.gg/UCEJysf2Ym",
-    "numberOfShards": 3,
+    "numberOfShards": 1,
 
     "dbUser":"root",
     "dbPassword":"",

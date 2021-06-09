@@ -32,9 +32,10 @@ exports.run = async (message, args) =>{
         });
 
         const helpEmbed=new Discord.MessageEmbed()
-        .setAuthor("Guess the Message Author", client.user.displayAvatarURL())
+        .setAuthor("Quote Guessr", client.user.displayAvatarURL())
         .setTitle("Help")
         .setDescription(`Hi, welcome to guess the message author. The concept of the bot is that you will see a random message from this server and you have to guess who was the author. Down below you can see the available commands. \n \n for details on a command use: **${prefix}help <command>** ${setupString}`)
+        .setColor("#05c963")
         .addField("Admin Commands", adminCommands, true)
         .addField("General Commands", generalCommands, true)
         .addField("‎‎‎", "Developed by Doggi#4758 \n[support server](https://discord.gg/UCEJysf2Ym)")
@@ -52,6 +53,7 @@ exports.run = async (message, args) =>{
         const helpCommandEmbed=new Discord.MessageEmbed()
         .setAuthor("Help", client.user.displayAvatarURL())
         .setTitle(cmd.config.name)
+        .setColor("#05c963")
         .addField("Description:", cmd.help.description)
         .addField("Usage:", output)
         
