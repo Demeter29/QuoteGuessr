@@ -14,6 +14,7 @@ exports.run = async (message, args) =>{
         const prefixDoneEmbed = new Discord.MessageEmbed()
         .setTitle("Prefix has been changed!")
         .setDescription(`new prefix is \`${prefix}\``)
+        .setColor("#05c963")
         
         message.channel.send(prefixDoneEmbed);
     });

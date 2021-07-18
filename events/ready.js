@@ -24,9 +24,9 @@ module.exports = async() => {
   client.trackedChannels = new Array();
   const channelsInCache = client.channels.cache.values();
   for await(channel of channelsInCache){
-    await db.query(`SELECT id, is_tracked FROM channel WHERE id='${channel.id}';`)
+    await db.query(`SELECT id FROM channel WHERE id='${channel.id}';`)
     .then(rows =>{
-      if(rows.length > 0 && rows[0]["is_tracked"] == 1){
+      if(rows.length){
         client.trackedChannels.push(rows[0]["id"]);
       }
     })

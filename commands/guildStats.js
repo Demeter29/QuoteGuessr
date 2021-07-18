@@ -4,9 +4,10 @@ const db=require("../database/db.js");
 exports.run = async (message, args) =>{
     const guildStatsEmbed=new Discord.MessageEmbed()
     .setTitle("Guild Stats")
-    .addField("Number of saved messages", "`"+await getNumberOfMessages()+"`")
+    .addField("Number of total messages", "`"+await getNumberOfMessages()+"`")
     .addField("Number of valid authors", "`"+await getNumberOfAuthors()+"`")
-    .addField("Tracked channels",await getNumberOfChannels())
+    .addField("Number of messages from channels",await getNumberOfChannels())
+    .setColor("#05c963")
 
     message.channel.send(guildStatsEmbed);
 

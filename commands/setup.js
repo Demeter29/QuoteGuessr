@@ -15,23 +15,30 @@ exports.run = async (message, args) =>{
         const setupEmbed=new Discord.MessageEmbed()
         .setTitle("Setup")
         .setDescription("Welcome, Guess the author is a game where you will see a random message from the server and have to guess who was the brilliant author. \n\n Mention a channel from which the messages will be used (you can add other channels later on). \n`"+prefix+"setup <#channel>`  \n\n Please note that this requires us to save the messages locally which we keep secure and they get completely earesed when the bot leaves the server or you use the "+prefix+"remove command.")
+        .setColor("#05c963")
 
         message.channel.send(setupEmbed); 
     }
     else if(args.length===1 && message.mentions.channels.first()){
-        const channel=message.mentions.channels.first();
+        const mentionedChannel=message.mentions.channels.first();
         //console.log(channel.permissionOverwrites)
-        if(!channel.viewable){
+        if(!mentionedChannel.viewable){
             return message.channel.send("I can't access the channel");
         }
 
-        download(channel)
+        for(item of client.fetchingQueue){
+            if(item.channel.guild.id==message.guild.id){
+                return message.channel.send("you are in setup right now, please wait!")
+            }
+        }
+
+        download(mentionedChannel)
         
         
     }
    
 
-    async function download(channel){
+    async function download(mentionedChannel){
         if(await db.query(`SELECT is_setup FROM guild WHERE id='${message.guild.id}'`).then(results =>{return results[0]["is_setup"]})){
             message.channel.send("this server is already set up!")
             return;
@@ -39,7 +46,8 @@ exports.run = async (message, args) =>{
 
         const downloadEmbed=new Discord.MessageEmbed()
         .setTitle("Fetching messages.. please wait...")
-        .setDescription(downloadString);
+        .setDescription(downloadString)
+        .setColor("#05c963")
 
         let downloadMessage=await message.channel.send(downloadEmbed);
 
@@ -47,17 +55,23 @@ exports.run = async (message, args) =>{
         if(client.fetchingQueue.length>0){
             downloadEmbed.setDescription(downloadString+"\n Estimated remaining time: 2 minutes")
             downloadMessage.edit(downloadEmbed)
-            client.fetchingQueue.push(function(){getAllMessages(channel)})
+            client.fetchingQueue.push({
+                "channel": mentionedChannel,
+                "run": function(){getAllMessages(mentionedChannel)}    
+            })
             console.log(`fetch queue: ${await client.shard.fetchClientValues("fetchingQueue.length")}`);
         }
         else{
-            client.fetchingQueue.push(function(){getAllMessages(channel)}) 
+            client.fetchingQueue.push({
+                "channel": mentionedChannel,
+                "run": function(){getAllMessages(mentionedChannel)}    
+            })
             console.log(`fetch queue: ${await client.shard.fetchClientValues("fetchingQueue.length")}`);        
-            await getAllMessages(channel)
+            await getAllMessages(mentionedChannel)
         }
         
     
-        async function getAllMessages(channel){
+        async function getAllMessages(mentionedChannel){
             downloadEmbed.setDescription(downloadString+"\n Estimated remaining time: 60 seconds")
             downloadMessage.edit(downloadEmbed)
             
@@ -65,7 +79,7 @@ exports.run = async (message, args) =>{
             let messages = [];
             let lastID;
 
-            fetchMessages(message.channel, 5000).then( async result =>{
+            fetchMessages(mentionedChannel, 5000).then( async result =>{
                 messages = result.messages;
                 lastID = result.lastID;
 
@@ -74,6 +88,8 @@ exports.run = async (message, args) =>{
                 const finishedEmbed=new Discord.MessageEmbed()
                 .setTitle("Setup finished!")
                 .setDescription("Everything is done, now you can start playing!")
+                .setColor("#05c963")
+                
                 message.channel.send(finishedEmbed)
 
                 
@@ -84,8 +100,8 @@ exports.run = async (message, args) =>{
                     
                 } 
                 db.query(`UPDATE guild set is_setup=true WHERE guild.id='${message.guild.id}'`)
-                db.query(`INSERT INTO channel VALUES('${channel.id}','${channel.guild.id}','${lastID}', 1)`)
-                client.trackedChannels.push(channel.id);
+                db.query(`INSERT INTO channel VALUES('${mentionedChannel.id}','${mentionedChannel.guild.id}')`)
+                client.trackedChannels.push(mentionedChannel.id);
             }).catch( () =>{
                 const errorEmbed = new Discord.MessageEmbed()
                 .setTitle("Error")
@@ -97,7 +113,7 @@ exports.run = async (message, args) =>{
             }).finally( async () =>{
                 client.fetchingQueue.splice(0, 1)           
                 if(client.fetchingQueue[0]) {
-                    client.fetchingQueue[0]()
+                    client.fetchingQueue[0].run();
                 }
                 console.log(`fetch queue: ${await client.shard.fetchClientValues("fetchingQueue.length")}`);
             })

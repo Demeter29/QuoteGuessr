@@ -13,7 +13,6 @@ exports.run = async (message, args) => {
     for (let i = users.length - 1; i >= 0; i--) {
         let msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id='${users[i]["author_id"]}' AND guild_id='${message.guild.id}'`).then(rows => {return rows});
         msgs = singleMessageFilter(msgs, message.guild);
-
         if (msgs.length < 5) {
             users.splice(i, 1);
         } else if (message.guild.members.resolve(users[i]["author_id"]) == null) {

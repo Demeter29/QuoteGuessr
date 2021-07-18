@@ -5,7 +5,7 @@ const db =mysql.createPool({
     user: client.config.dbUser,
     password: client.config.dbPassword,
     database: client.config.dbName
-});
+})
 
 function query(sql, inserts){
     return new Promise( (resolve) =>{ //TODO: no rejection!

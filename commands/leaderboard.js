@@ -23,7 +23,8 @@ exports.run = async (message, args) =>{
     const leaderboardEmbed = new Discord.MessageEmbed()
     .setTitle("Leaderboard")
     .addField("Highest Winstreaks:", highestWinstreakString, true)
-    .addField("Highest Points:", highestPointsString, true);
+    .addField("Highest Points:", highestPointsString, true)
+    .setColor("#05c963")
 
     message.channel.send(leaderboardEmbed)
 }

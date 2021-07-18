@@ -4,7 +4,7 @@ const client=require("../variables/client.js")
 
 exports.run= async (message, args) =>{
     let channel;
-    if(args.length!=1 || !message.mentions.channels.first()){
+    if(args.length!=1 || !message.mentions.channels.first() || message.mentions.channels.first().type!="text"){
         return message.channel.send(client.guildPrefixes.get(message.guild.id)+"remove <#channel>")
     }
     else{
