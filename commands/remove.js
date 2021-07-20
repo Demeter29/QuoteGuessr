@@ -1,11 +1,11 @@
 const Discord=require("discord.js");
 const db=require("../database/db.js");
-const client=require("../variables/client.js")
+const client=require("../constants/client.js")
 
 exports.run= async (message, args) =>{
     let channel;
     if(args.length!=1 || !message.mentions.channels.first() || message.mentions.channels.first().type!="text"){
-        return message.channel.send(client.guildPrefixes.get(message.guild.id)+"remove <#channel>")
+        return client.commands.get("help").run(message, ["remove"]);
     }
     else{
         const channelMention=message.mentions.channels.first();

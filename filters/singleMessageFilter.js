@@ -8,9 +8,6 @@ module.exports = (messages, guild) =>{
         if(messages[i].content.length<5 || messages[i].content.length>200){        
             messages.splice(i, 1);
         }
-        else if(!guild.members.resolve(messages[i]["author_id"])){ //no longer member
-            messages.splice(i, 1);
-        } 
         else if(messages[i].content.split(" ").length<2){
             messages.splice(i, 1);
         }
@@ -23,9 +20,6 @@ module.exports = (messages, guild) =>{
         //else if(messages[i].system){
         //    messages.splice(i, 1);
        // }
-        else if(guild.members.resolve(messages[i]["author_id"]).bot){ //
-            messages.splice(i, 1);
-        }
         else if(messages[i].content.includes("\n")){
             messages.splice(i, i)
         }

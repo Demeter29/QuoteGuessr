@@ -1,5 +1,5 @@
 //this event emits when all the shards are loaded in (it emits only once).
-const client=require("../variables/client.js");
+const client=require("../constants/client.js");
 const db=require("../database/db.js");
 
 module.exports = async() => {

@@ -1,4 +1,4 @@
-const client = require("../variables/client.js")
+const client = require("../constants/client.js")
 
 module.exports = async (button) =>{
     //

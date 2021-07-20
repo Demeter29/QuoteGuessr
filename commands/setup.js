@@ -1,4 +1,4 @@
-const client = require("../variables/client");
+const client = require("../constants/client");
 const asleep=require("asleep");
 const db=require("../database/db.js");
 const Discord=require("discord.js")
@@ -14,12 +14,19 @@ exports.run = async (message, args) =>{
         
         const setupEmbed=new Discord.MessageEmbed()
         .setTitle("Setup")
-        .setDescription("Welcome, Guess the author is a game where you will see a random message from the server and have to guess who was the brilliant author. \n\n Mention a channel from which the messages will be used (you can add other channels later on). \n`"+prefix+"setup <#channel>`  \n\n Please note that this requires us to save the messages locally which we keep secure and they get completely earesed when the bot leaves the server or you use the "+prefix+"remove command.")
+        .setDescription("Before playing the game, you need to load the messages from a channel. \n\n Mention a channel from which the messages will be used (you can add other channels later on). \n`"+prefix+"setup <#channel>`  \n\n Please note that this requires us to save the messages locally which we keep secure and they get completely earesed when the bot leaves the server or you use the "+prefix+"remove command.")
         .setColor("#05c963")
 
         message.channel.send(setupEmbed); 
     }
-    else if(args.length===1 && message.mentions.channels.first()){
+    else if(args.length===1){
+        if(!message.mentions.channels.first()){
+            const noMentionEmbed = new Discord.MessageEmbed()
+            .setTitle("Error: Mention a channel with the command")
+            .setDescription(`Example: \`${prefix}setup #general\``)
+
+            return message.channel.send(noMentionEmbed);
+        }
         const mentionedChannel=message.mentions.channels.first();
         //console.log(channel.permissionOverwrites)
         if(!mentionedChannel.viewable){
@@ -28,6 +35,7 @@ exports.run = async (message, args) =>{
 
         for(item of client.fetchingQueue){
             if(item.channel.guild.id==message.guild.id){
+                
                 return message.channel.send("you are in setup right now, please wait!")
             }
         }
@@ -125,8 +133,8 @@ exports.run = async (message, args) =>{
 
 exports.help = {
     description: "When you add the bot to a server first you need to set it up with this command, it will load messages from the channel you mention. The process takes a few minutes.",
-    usage: ["setup"],
-    usageHelp : [""]
+    usage: ["setup", "setup #channel"],
+    usageHelp : ["explains the setup process", "starts the setup with the mentioned channel"]
 }
 
 exports.config = {

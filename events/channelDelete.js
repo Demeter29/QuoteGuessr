@@ -1,5 +1,5 @@
 const db=require("../database/db.js");
-const client=require("../variables/client.js")
+const client=require("../constants/client.js")
 
 module.exports= async channel =>{
     const row=db.query(`SELECT id FROM channel WHERE id='${channel.id}'`).then( rows=>{return rows});

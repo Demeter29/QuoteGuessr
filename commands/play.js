@@ -1,59 +1,60 @@
 const Discord = require("discord.js")
-const client = require("../variables/client.js")
+const client = require("../constants/client.js")
 const db = require("../database/db.js")
 const Canvas = require("canvas");
 const singleMessageFilter = require("../filters/singleMessageFilter.js");
-
 const disbut = require('discord-buttons')(client);
 
 exports.run = async (message, args) => {
     const prefix = client.guildPrefixes.get(message.guild.id);
 
-    let users = await db.query(`SELECT author_id, count(*) AS message_count FROM message WHERE guild_id='${message.guild.id}' GROUP BY author_id, guild_id HAVING message_count>=10`).then(rows => {return rows});
+    let users = await db.query(`SELECT author_id, count(*) AS message_count FROM message WHERE guild_id='${message.guild.id}' GROUP BY author_id, guild_id HAVING message_count>=${client.config.minimalAmountOfMessages}`).then(rows => {return rows});
     for (let i = users.length - 1; i >= 0; i--) {
-        let msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id='${users[i]["author_id"]}' AND guild_id='${message.guild.id}'`).then(rows => {return rows});
+        if((message.guild.members.resolve(users[i]["author_id"]) == null) ) { //|| (message.guild.members.resolve(users[i]["author_id"]).user.bot)
+            users.splice(i, 1);  
+        }
+    }
+    
+
+    let realUserID;
+    let msgs;
+    while(true){
+        if(users.length<3){
+            const notEnoughPlayersEmbed = new Discord.MessageEmbed()
+            .setTitle("Error: You don't have enough members")
+            .setDescription(`You need to have atleast 3 members's messages to play the game. \n\n Try to add new channels to the game with the \`${prefix}add\` command to increase the number of messages available.`)
+            .setColor("#ff0830")
+
+            return message.channel.send(notEnoughPlayersEmbed);
+        }
+        console.log("users: "+users.length)
+
+        let randomIndex=Math.floor(Math.random() * ((users.length - 1) - 0 + 1)) + 0;
+        realUserID = users[randomIndex]["author_id"];
+
+        msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id='${realUserID}' AND guild_id='${message.guild.id}'`).then(rows => {return rows});
         msgs = singleMessageFilter(msgs, message.guild);
-        if (msgs.length < 5) {
-            users.splice(i, 1);
-        } else if (message.guild.members.resolve(users[i]["author_id"]) == null) {
-
-            users.splice(i, 1);
+        if (msgs.length >= client.config.minimalAmountOfMessages) {
+            break;
+        }
+        else{
+            users.splice(randomIndex, 1);
         }
     }
-
-    if (users.length < 3) {
-        return message.channel.send("There aren't enough active users in the saved database from this server to play the game, either load more messages or get the server more active");
-    }
-
-    let randomUserID = 0;
-    let forIndex = 0;
-    do {
-        if (forIndex > 200) { //prevent infinite loop
-            return message.channel.send("There aren't enough active users in the saved database from this server to play the game, either load more messages or get the server more active")
-        }
-
-        randomUserID = users[Math.floor(Math.random() * ((users.length - 1) - 0 + 1)) + 0]["author_id"];
-        forIndex++;
-    }
-    while (!message.guild.members.resolve(randomUserID))
 
     const options = [];
-    options.push(randomUserID)
+    options.push(realUserID)
 
     for (let i = 0; i < 2;) {
         let fakeAuthorID = users[Math.floor(Math.random() * ((users.length - 1) - 0 + 1)) + 0]["author_id"];
-        if (fakeAuthorID === randomUserID || options.includes(fakeAuthorID)) {
+        if (fakeAuthorID === realUserID || options.includes(fakeAuthorID)) {
             continue;
         } else {
             options.push(fakeAuthorID);
             i++;
         }
     }
-
     shuffleArray(options);
-
-    let msgs = await db.query(`SELECT content, author_id, channel_id, time FROM message WHERE author_id='${randomUserID}' AND guild_id='${message.guild.id}'`).then(rows => {return rows});
-    msgs = singleMessageFilter(msgs, message.guild);
 
     let randomMessage = msgs[Math.floor(Math.random() * ((msgs.length - 1) - 0 + 1)) + 0];
 
@@ -81,8 +82,7 @@ exports.run = async (message, args) => {
 
     const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'guessMessage.png');
 
-     //buttons
-    
+    //buttons
     let buttonA = new disbut.MessageButton()
     .setStyle('blurple')
     .setLabel('A')
@@ -104,10 +104,10 @@ exports.run = async (message, args) => {
     .setID('playAgain');
 
     const guessEmbed = new Discord.MessageEmbed()
-        .setAuthor("playing: " + message.member.displayName, message.author.displayAvatarURL())
-        .setTitle("Who wrote the following message?")
-        .attachFiles(attachment)
-        .setImage('attachment://guessMessage.png');
+    .setAuthor("playing: " + message.member.displayName, message.author.displayAvatarURL())
+    .setTitle("Who wrote the following message?")
+    .attachFiles(attachment)
+    .setImage('attachment://guessMessage.png');
 
     let guessMessage = await message.channel.send({embed: guessEmbed, buttons: [buttonA, buttonB, buttonC]});
 
@@ -115,8 +115,8 @@ exports.run = async (message, args) => {
     const filter = (button) => (true);
     const collector = guessMessage.createButtonCollector(filter, { time: 60000 });
 
-    let correctAnswer = "abc".charAt(options.indexOf(randomUserID));
-    let correctAnswerString = `${correctAnswer.toUpperCase()}: ${message.guild.members.resolve(randomUserID).displayName}`;
+    let correctAnswer = "abc".charAt(options.indexOf(realUserID));
+    let correctAnswerString = `${correctAnswer.toUpperCase()}: ${message.guild.members.resolve(realUserID).displayName}`;
 
     collector.on('collect', async button => {
         button.defer();
@@ -144,7 +144,7 @@ exports.run = async (message, args) => {
         
 
     });
-    collector.on('end', collected =>{
+    collector.on('end', async collected =>{
         buttonA.setDisabled();
         buttonB.setDisabled();
         buttonC.setDisabled();
@@ -173,10 +173,11 @@ exports.run = async (message, args) => {
             const timesUpEmbed = new Discord.MessageEmbed()
             .setAuthor("playing: "+message.member.displayName, message.author.displayAvatarURL())
             .setTitle("Time's up!")
-            .setDescription("You took the maximum of 60 seconds to guess")
+            .setDescription("You took the maximum of 60 seconds to guess.")
             .setColor("#ff0830");
 
-            message.channel.send({embed: timesUpEmbed, button: playAgainButton});
+            let endMessage = await message.channel.send({embed: timesUpEmbed, button: playAgainButton});
+            end(endMessage, timesUpEmbed);
         }
     });
 
@@ -234,10 +235,10 @@ exports.run = async (message, args) => {
                 collector.stop();
             }
 
-            let fakeMessage=button.message;
-            fakeMessage.member = button.clicker;
-            fakeMessage.author = button.clicker.user;
-            client.commands.get("play").run(fakeMessage);
+            let phantomMessage=button.message;
+            phantomMessage.member = button.clicker;
+            phantomMessage.author = button.clicker.user;
+            client.commands.get("play").run(phantomMessage);
         });
         collector.on('end', () =>{
             playAgainButton.setDisabled();

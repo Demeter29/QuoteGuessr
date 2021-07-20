@@ -1,7 +1,8 @@
 const Discord=require("discord.js");
 const { DiscordAPIError } = require("discord.js");
-const client=require("../variables/client.js");
+const client=require("../constants/client.js");
 const db = require("../database/db.js");
+const disbut = require("discord-buttons");
 
 exports.run = async (message, args) =>{
     const prefix= client.guildPrefixes.get(message.guild.id)
@@ -34,12 +35,12 @@ exports.run = async (message, args) =>{
         const helpEmbed=new Discord.MessageEmbed()
         .setAuthor("Quote Guessr", client.user.displayAvatarURL())
         .setTitle("Help")
-        .setDescription(`Hi, welcome to guess the message author. The concept of the bot is that you will see a random message from this server and you have to guess who was the author. Down below you can see the available commands. \n \n for details on a command use: **${prefix}help <command>** ${setupString}`)
+        .setDescription(`Welcome to guess the message author. The concept of the bot is that you will see a random message from this server and you have to guess who was the author. Down below you can see the available commands. ${setupString} \n \n for details on a command use: **${prefix}help <command>**`)
         .setColor("#05c963")
         .addField("Admin Commands", adminCommands, true)
         .addField("General Commands", generalCommands, true)
-        .addField("‎‎‎", "Developed by Doggi#4758 \n[support server](https://discord.gg/UCEJysf2Ym)")
-        message.channel.send(helpEmbed)
+        .addField("‎‎‎", "Developed by Doggi#4758")
+        message.channel.send( {buttons: [supportServerButton, inviteButton, githubButton], embed: helpEmbed})
     }
     else{
         const cmd=client.commands.get(args[0]);
@@ -61,6 +62,25 @@ exports.run = async (message, args) =>{
         message.channel.send(helpCommandEmbed)
     }
 }
+
+const supportServerButton = new disbut.MessageButton()
+.setStyle("url")
+.setLabel("Support Server")
+.setURL("https://discord.gg/HD5eV2qKsA")
+
+const githubButton = new disbut.MessageButton()
+.setStyle("url")
+.setLabel("Github")
+.setURL("https://github.com/Demeter29/QuoteGuessr")
+
+const inviteButton = new disbut.MessageButton()
+.setStyle("url")
+.setLabel("Invite the bot to your server")
+.setURL("https://discord.com/api/oauth2/authorize?client_id=809631893627994128&permissions=0&scope=bot")
+
+
+
+
 
 exports.config = {
     name: "help",

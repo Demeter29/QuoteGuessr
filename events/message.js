@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const client=require("../variables/client.js");
+const client=require("../constants/client.js");
 const db=require("../database/db.js");
 const { DiscordAPIError } = require("discord.js");
 

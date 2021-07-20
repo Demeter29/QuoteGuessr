@@ -1,12 +1,13 @@
 const Discord=require("discord.js");
 const db=require("../database/db.js");
-const client=require("../variables/client.js")
+const client=require("../constants/client.js")
 const asleep=require("asleep")
 const setupFilter=require("../filters/setupFilter.js");
 const fetchMessages = require("../scripts/fetchMessages.js");
 //client.channelAddings= new Map();  implement later? But maybe we dont need to, depends how much traffic will the bot have.
 
 exports.run = async(message, args) =>{
+    const prefix= client.guildPrefixes.get(message.guild.id);
     if(args.length!=1 || !message.mentions.channels.first() || message.mentions.channels.first().type!="text"){
         return client.commands.get("help").run(message, ["add"]);
     }
@@ -14,9 +15,18 @@ exports.run = async(message, args) =>{
     const mentionedChannel=message.mentions.channels.first();
     if(!mentionedChannel.viewable) return message.channel.send("I can't access the channel");
 
+    if(db.query(`SELECT id FROM channel WHERE id=${mentionedChannel.id}`).then(rows=>{if(rows.length>0) return true;})){
+        const alreadyAddedEmbed = new Discord.MessageEmbed()
+        .setTitle("Error: This Channel is already added")
+        .setDescription(`To check the already added channels, use the \`${prefix}guild\` command.`)
+        .setColor("#ff0830")
+
+        return message.channel.send(alreadyAddedEmbed)
+    }
+
     const addEmbed = new Discord.MessageEmbed()
     .setTitle("500 messages will be added shortly")
-    .setDescription("\n\n note: ")
+    .setDescription(`This might take some time. \n\n Tip: If you want to remove a channel from the game, use the \`${prefix}remove\` command.`)
     .setColor("#05c963")
 
     message.channel.send(addEmbed);

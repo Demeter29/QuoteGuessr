@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const client = require("./variables/client.js");
+const client = require("./constants/client.js");
 client.config=require("./config.json");
 const asleep=require("asleep")
 const fs=require("fs");

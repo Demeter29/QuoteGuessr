@@ -1,10 +1,10 @@
 const Discord = require("discord.js");
-const client=require("../variables/client.js");
+const client=require("../constants/client.js");
 const db=require("../database/db.js");
 
 
 exports.run = async (message, args) =>{
-    if(args.length===0) return message.reply("prefix cannot be empty!");
+    if(args.length===0) return client.commands.get("help").run(message, ["prefix"]);
     if(!(args.length===1)) return message.reply("prefix cannot contain spaces!");
     if(args[0].length>5) return message.reply("prefix length cannot be longer than 5 characters!");
     const prefix=args[0].toLowerCase()

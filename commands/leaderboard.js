@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const client=require("../variables/client.js");
+const client=require("../constants/client.js");
 const db=require("../database/db.js");
 const { DiscordAPIError } = require("discord.js");
 
@@ -14,8 +14,8 @@ exports.run = async (message, args) =>{
         let rowPoints=highestPointsOrdered[i];
         if(!rowWinstreak) continue;
 
-        highestWinstreakString+=`#${i+1} ${message.guild.members.resolve(rowWinstreak["user_id"]).displayName}: ${rowWinstreak["highest_winstreak"]}`;
-        highestPointsString+=`#${i+1} ${message.guild.members.resolve(rowPoints["user_id"]).displayName}: ${rowPoints["points"]}`;
+        highestWinstreakString+=`#${i+1} ${message.guild.members.resolve(rowWinstreak["user_id"]).displayName}: ${rowWinstreak["highest_winstreak"]}\n`;
+        highestPointsString+=`#${i+1} ${message.guild.members.resolve(rowPoints["user_id"]).displayName}: ${rowPoints["points"]}\n`;
     }
     highestWinstreakString+="`";
     highestPointsString+="`";
