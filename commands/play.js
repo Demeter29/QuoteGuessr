@@ -27,7 +27,6 @@ exports.run = async (message, args) => {
 
             return message.channel.send(notEnoughPlayersEmbed);
         }
-        console.log("users: "+users.length)
 
         let randomIndex=Math.floor(Math.random() * ((users.length - 1) - 0 + 1)) + 0;
         realUserID = users[randomIndex]["author_id"];
@@ -117,14 +116,20 @@ exports.run = async (message, args) => {
 
     let correctAnswer = "abc".charAt(options.indexOf(realUserID));
     let correctAnswerString = `${correctAnswer.toUpperCase()}: ${message.guild.members.resolve(realUserID).displayName}`;
+    let answer;
 
     collector.on('collect', async button => {
         button.defer();
         if(!(button.clicker.member.id==message.member.id)){
-            button.clicker.user.send(`Hi, you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the ${prefix}play command in the server **(not here!)**`);
-            return;
+            collector.empty()
+            const notThePlayerEmber = new Discord.MessageEmbed()
+            .setTitle("Wrong Game")
+            .setDescription(`you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the \`${prefix}play\` command in the server **(not here!)**`)
+            .setColor("#ff0830")
+            return button.clicker.user.send(notThePlayerEmber);
         }
 
+        answer = button.id;
         collector.stop();
 
         await db.query(`UPDATE user SET single_games_played=single_games_played+1, points = points-50 WHERE user_id='${message.author.id}' AND guild_id='${message.guild.id}'`).then(results => {
@@ -133,11 +138,11 @@ exports.run = async (message, args) => {
             }
         });
         
-        let answer = button.id;
-
         if (answer == correctAnswer) {
             win();
         } else {
+            
+
             lose(correctAnswerString);
         }
 
@@ -149,20 +154,29 @@ exports.run = async (message, args) => {
         buttonB.setDisabled();
         buttonC.setDisabled();
 
+        if(answer!=correctAnswer){
+            console.log(answer)
+            switch (answer){
+                case "a":
+                    buttonA.setStyle("red");
+                break;
+                case "b":
+                    buttonB.setStyle("red");
+                break;
+                case "c":
+                    buttonC.setStyle("red");
+                break;
+            }
+        }
+        
         switch (correctAnswer){
             case "a":
                 buttonA.setStyle("green");
-                buttonB.setStyle("red");
-                buttonC.setStyle("red");
             break;
             case "b":
-                buttonA.setStyle("red");
                 buttonB.setStyle("green");
-                buttonC.setStyle("red");
             break;
             case "c":
-                buttonA.setStyle("red");
-                buttonB.setStyle("red");
                 buttonC.setStyle("green");
             break;
         }
@@ -233,6 +247,14 @@ exports.run = async (message, args) => {
 
             if(button.clicker.member.id==message.member.id){
                 collector.stop();
+            }
+            else{
+                collector.users.clear()
+                const notThePlayerEmber = new Discord.MessageEmbed()
+                .setTitle("Wrong Game")
+                .setDescription(`you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the \`${prefix}play\` command in the server **(not here!)**`)
+                .setColor("#ff0830")
+                return button.clicker.user.send(notThePlayerEmber);
             }
 
             let phantomMessage=button.message;

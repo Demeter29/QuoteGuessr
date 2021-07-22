@@ -26,7 +26,11 @@ exports.run= async (message, args) =>{
         client.trackedChannels.splice(index, 1);      
     }
 
-    message.channel.send(channel.name+" has been removed from the database")
+    const removeEmbed = new Discord.MessageEmbed()
+    .setTitle("Channel has been removed from the game!")
+    .setColor("#05c963")
+
+    message.channel.send(removeEmbed);
 }
 
 exports.config = {

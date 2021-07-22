@@ -35,11 +35,11 @@ exports.run = async (message, args) =>{
         const helpEmbed=new Discord.MessageEmbed()
         .setAuthor("Quote Guessr", client.user.displayAvatarURL())
         .setTitle("Help")
-        .setDescription(`Welcome to guess the message author. The concept of the bot is that you will see a random message from this server and you have to guess who was the author. Down below you can see the available commands. ${setupString} \n \n for details on a command use: **${prefix}help <command>**`)
+        .setDescription(`Welcome to Quote Guessr. The concept of the bot is that you will see a random message from this server and you have to guess who was the author. Down below you can see the available commands. ${setupString} \n \n for details on a command use: **${prefix}help <command>**`)
         .setColor("#05c963")
         .addField("Admin Commands", adminCommands, true)
         .addField("General Commands", generalCommands, true)
-        .addField("‎‎‎", "Developed by Doggi#4758")
+        .setFooter("Developed by Doggi#4758")
         message.channel.send( {buttons: [supportServerButton, inviteButton, githubButton], embed: helpEmbed})
     }
     else{
@@ -75,7 +75,7 @@ const githubButton = new disbut.MessageButton()
 
 const inviteButton = new disbut.MessageButton()
 .setStyle("url")
-.setLabel("Invite the bot to your server")
+.setLabel("Invite bot to your server")
 .setURL("https://discord.com/api/oauth2/authorize?client_id=809631893627994128&permissions=0&scope=bot")
 
 

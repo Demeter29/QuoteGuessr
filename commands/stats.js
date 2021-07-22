@@ -5,7 +5,7 @@ exports.run = async (message, args) =>{
     const statsEmbed=new Discord.MessageEmbed()
     .setAuthor(message.member.displayName)
     .setTitle("Guess the Author User Statistics")
-    .addField("Single message games (won/played)", `points: \`${await getPoints()}\`\nwon/played: \`${await getStat("single", "won")}/${await getStat("single", "played")} (${+await getWinRate("single")}%)\``)
+    .addField("Single message games", `points: \`${await getPoints()}\`\nwon/played: \`${await getStat("single", "won")}/${await getStat("single", "played")} (${+await getWinRate("single")}%)\``)
     .setThumbnail(message.author.displayAvatarURL())
     .setColor("#05c963")
     

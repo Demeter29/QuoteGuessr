@@ -15,17 +15,23 @@ exports.run = async(message, args) =>{
     const mentionedChannel=message.mentions.channels.first();
     if(!mentionedChannel.viewable) return message.channel.send("I can't access the channel");
 
-    if(db.query(`SELECT id FROM channel WHERE id=${mentionedChannel.id}`).then(rows=>{if(rows.length>0) return true;})){
-        const alreadyAddedEmbed = new Discord.MessageEmbed()
-        .setTitle("Error: This Channel is already added")
-        .setDescription(`To check the already added channels, use the \`${prefix}guild\` command.`)
-        .setColor("#ff0830")
+    db.query(`SELECT id FROM channel WHERE id='${mentionedChannel.id}'`)
+        .then(rows=>{
+            if(rows.length>0){
+                const alreadyAddedEmbed = new Discord.MessageEmbed()
+                .setTitle("Error: This Channel is already added")
+                .setDescription(`To check the already added channels, use the \`${prefix}guild\` command.`)
+                .setColor("#ff0830")
 
-        return message.channel.send(alreadyAddedEmbed)
-    }
+                return message.channel.send(alreadyAddedEmbed)
+            }
+        });
+   
+        
+    
 
     const addEmbed = new Discord.MessageEmbed()
-    .setTitle("500 messages will be added shortly")
+    .setTitle(`#${mentionedChannel.name} will be added shortly`)
     .setDescription(`This might take some time. \n\n Tip: If you want to remove a channel from the game, use the \`${prefix}remove\` command.`)
     .setColor("#05c963")
 
@@ -67,7 +73,7 @@ exports.run = async(message, args) =>{
         }).finally( async () =>{
             client.fetchingQueue.splice(0, 1)           
             if(client.fetchingQueue[0]) {
-                client.fetchingQueue[0]()
+                client.fetchingQueue[0].run()
             }
             console.log(`fetch queue: ${await client.shard.fetchClientValues("fetchingQueue.length")}`);
         })                  
