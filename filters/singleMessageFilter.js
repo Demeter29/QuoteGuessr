@@ -8,22 +8,19 @@ module.exports = (messages, guild) =>{
         if(messages[i].content.length<5 || messages[i].content.length>200){        
             messages.splice(i, 1);
         }
-        else if(messages[i].content.split(" ").length<2){
+        else if(messages[i].content.split(" ").length<10){
             messages.splice(i, 1);
         }
-        else if(messages[i].attachments){    //message has attachments
+        else if(messages[i].attachments){
             messages.splice(i, 1);
         }
         else if(messages[i].content.startsWith("https://") || messages[i].content.startsWith("http://")){ //message is link
             messages.splice(i, 1);
         }
-        //else if(messages[i].system){
-        //    messages.splice(i, 1);
-       // }
-        else if(messages[i].content.includes("\n")){
-            messages.splice(i, i)
-        }
-        //else if()   //if the next message is a bot then its most likely a bot command.
+        //else if(messages[i].content.includes("\n")){
+        //    messages.splice(i, i)
+        //}
+
 
         //modifiers
         else{

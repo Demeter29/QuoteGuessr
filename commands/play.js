@@ -10,7 +10,7 @@ exports.run = async (message, args) => {
 
     let users = await db.query(`SELECT author_id, count(*) AS message_count FROM message WHERE guild_id='${message.guild.id}' GROUP BY author_id, guild_id HAVING message_count>=${client.config.minimalAmountOfMessages}`).then(rows => {return rows});
     for (let i = users.length - 1; i >= 0; i--) {
-        if((message.guild.members.resolve(users[i]["author_id"]) == null) ) { //|| (message.guild.members.resolve(users[i]["author_id"]).user.bot)
+        if((message.guild.members.resolve(users[i]["author_id"]) == null) || (message.guild.members.resolve(users[i]["author_id"]).user.bot)) { //
             users.splice(i, 1);  
         }
     }
@@ -55,9 +55,6 @@ exports.run = async (message, args) => {
     }
     shuffleArray(options);
 
-    let randomMessage = msgs[Math.floor(Math.random() * ((msgs.length - 1) - 0 + 1)) + 0];
-
-    //Canvas 
     const canvas = Canvas.createCanvas(700, 400);
     const ctx = canvas.getContext('2d');
     ctx.font = "bold 25px arial, sans-serif ";
@@ -66,34 +63,49 @@ exports.run = async (message, args) => {
     const background = await Canvas.loadImage("./resources/singleMessage.png");
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-    const lines = getLines(ctx, randomMessage["content"], 561);
-    if (lines.length > 3) {
-        console.log("too long so re run");
-        return require("./play.js").run(message, args);
+    let randomMessage;
+    let lines;
+    while(true){
+        if(msgs.length<0) return;
+
+        let randomIndex=Math.floor(Math.random() * ((msgs.length - 1) - 0 + 1)) + 0;
+        randomMessage = msgs[randomIndex];
+
+        lines = getLines(ctx, randomMessage["content"], 561);
+        if (lines.length > 3) {
+            msgs.splice(randomIndex, 1);
+            continue;
+        }
+        break;
     }
+
     for (i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], 110, 90 + (i * 30));
     }
 
-    await drawAvatar(options[0], 105, 205)
-    await drawAvatar(options[1], 105, 280)
-    await drawAvatar(options[2], 105, 358)
+    await drawAvatar(options[0], ctx, 105, 205, 48,  "#000000")
+    await drawAvatar(options[1], ctx, 105, 280, 48,  "#000000")
+    await drawAvatar(options[2], ctx, 105, 358, 48,  "#000000")
 
     const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'guessMessage.png');
 
+    
+
+    
+
     //buttons
     let buttonA = new disbut.MessageButton()
-    .setStyle('blurple')
+    .setStyle('gray')
     .setLabel('A')
     .setID('a'); 
 
     let buttonB = new disbut.MessageButton()
-    .setStyle('blurple') 
+    .setStyle('gray') 
     .setLabel('B') 
     .setID('b');
 
     let buttonC = new disbut.MessageButton()
-    .setStyle('blurple') 
+    .setStyle('gray') 
     .setLabel('C') 
     .setID('c');
 
@@ -101,6 +113,11 @@ exports.run = async (message, args) => {
     .setStyle('blurple') 
     .setLabel('Play Again!') 
     .setID('playAgain');
+
+    let saveMessageButton = new disbut.MessageButton()
+    .setStyle('gray')
+    .setLabel('Save message')
+    .setID('saveMessage')
 
     const guessEmbed = new Discord.MessageEmbed()
     .setAuthor("playing: " + message.member.displayName, message.author.displayAvatarURL())
@@ -155,7 +172,6 @@ exports.run = async (message, args) => {
         buttonC.setDisabled();
 
         if(answer!=correctAnswer){
-            console.log(answer)
             switch (answer){
                 case "a":
                     buttonA.setStyle("red");
@@ -219,7 +235,7 @@ exports.run = async (message, args) => {
         .setAuthor("playing: "+message.member.displayName, message.author.displayAvatarURL())
         .setDescription(`You got +100 points (total: ${points}) \n\nCurrent winstreak: **${currentWinstreak}**`);
 
-        let endMessage =await message.channel.send( {button: playAgainButton, embed: winEmbed});
+        let endMessage =await message.channel.send( {buttons: [playAgainButton, saveMessageButton], embed: winEmbed});
         end(endMessage, winEmbed);
 
     }
@@ -234,7 +250,7 @@ exports.run = async (message, args) => {
         .setDescription(`The correct answer was ${correctAnswerString}\n\nYou lost 50 points (total: ${points})`)
         .setAuthor("playing: "+message.member.displayName, message.author.displayAvatarURL());
 
-        let endMessage = await message.channel.send( {button: playAgainButton, embed: loseEmbed});
+        let endMessage = await message.channel.send( {buttons: [playAgainButton, saveMessageButton], embed: loseEmbed});
         end(endMessage, loseEmbed);
     }
 
@@ -242,30 +258,67 @@ exports.run = async (message, args) => {
         const filter = (button) => (true);
         const collector = endMessage.createButtonCollector(filter, {  time: 240000 });
 
-        collector.on('collect', button => {
+        collector.on('collect', async button => {
             button.defer();
 
-            if(button.clicker.member.id==message.member.id){
-                collector.stop();
+            if(button.id=="playAgain"){
+                if(button.clicker.member.id==message.member.id){
+                    playAgainButton.setDisabled();
+                    endMessage.edit( {embed: embedWithoutButtons, buttons: [playAgainButton, saveMessageButton]});
+                }
+                else{
+                    collector.users.clear()
+                    const notThePlayerEmber = new Discord.MessageEmbed()
+                    .setTitle("Wrong Game")
+                    .setDescription(`you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the \`${prefix}play\` command in the server **(not here!)**`)
+                    .setColor("#ff0830")
+                    return button.clicker.user.send(notThePlayerEmber);
+                }
+    
+                let phantomMessage=button.message;
+                phantomMessage.member = button.clicker;
+                phantomMessage.author = button.clicker.user;
+                client.commands.get("play").run(phantomMessage);
             }
-            else{
-                collector.users.clear()
-                const notThePlayerEmber = new Discord.MessageEmbed()
-                .setTitle("Wrong Game")
-                .setDescription(`you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the \`${prefix}play\` command in the server **(not here!)**`)
-                .setColor("#ff0830")
-                return button.clicker.user.send(notThePlayerEmber);
+            else{   //save Message
+
+                saveMessageButton.setDisabled();
+                endMessage.edit( {embed: embedWithoutButtons, buttons: [playAgainButton, saveMessageButton]});
+
+                const canvas = Canvas.createCanvas(700, 200);
+
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = "#32353b"
+                void ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#dcdad9"
+
+
+                //const background = await Canvas.loadImage("./resources/singleMessage.png");
+                //ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+                await drawAvatar(realUserID, ctx, 55, 45, 55, "#dcdad9")
+                ctx.font = "bold 25px arial, sans-serif ";
+
+                for (i = 0; i < lines.length; i++) {
+                    ctx.fillText(lines[i], 110, 90 + (i * 30));
+                }
+
+                ctx.font = "bold 20px arial, sans-serif ";
+                const date = "-"+randomMessage["time"].toDateString();
+               // const dateString = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`
+                ctx.fillText(date, 500, 180);
+                const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'savedMessage.png');
+                
+                const saveMessageEmbed = new Discord.MessageEmbed()
+                .attachFiles(attachment)
+                .setImage('attachment://savedMessage.png');
+                message.channel.send(saveMessageEmbed)
             }
 
-            let phantomMessage=button.message;
-            phantomMessage.member = button.clicker;
-            phantomMessage.author = button.clicker.user;
-            client.commands.get("play").run(phantomMessage);
+            
         });
         collector.on('end', () =>{
-            playAgainButton.setDisabled();
 
-            endMessage.edit( {embed: embedWithoutButtons, button: playAgainButton});
         });
         
     }
@@ -277,19 +330,19 @@ exports.run = async (message, args) => {
         }
     }
 
-    async function drawAvatar(userID, x, y) {
-        const size = 48
+    async function drawAvatar(userID, ctx, x, y, diameter, nameColor) {
+        ctx.font = `bold ${diameter/2}px arial, sans-serif `;
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y, size / 2, 0, Math.PI * 2, true);
+        ctx.arc(x, y, diameter / 2, 0, Math.PI * 2, true);
         ctx.clip();
         const member = message.guild.members.resolve(userID);
         const avatar = await Canvas.loadImage(member.user.displayAvatarURL({format: 'jpg'}));
-        ctx.drawImage(avatar, x - (size / 2), y - (size / 2), size, size);
+        ctx.drawImage(avatar, x - (diameter / 2), y - (diameter / 2), diameter, diameter);
         ctx.restore();
 
-        ctx.fillStyle = "#000000"
+        ctx.fillStyle =nameColor;
         ctx.fillText(member.displayName, x + 35, y + 7)
     }
 
