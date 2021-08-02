@@ -318,6 +318,9 @@ exports.run = async (message, args) => {
             
         });
         collector.on('end', () =>{
+            playAgainButton.setDisabled();
+            saveMessageButton.setDisabled();
+            endMessage.edit( {embed: embedWithoutButtons, buttons: [playAgainButton, saveMessageButton]});
 
         });
         
@@ -350,7 +353,6 @@ exports.run = async (message, args) => {
         var words = text.split(" ");
         var lines = [];
         var currentLine = words[0];
-
         for (var i = 1; i < words.length; i++) {
             var word = words[i];
             var width = ctx.measureText(currentLine + " " + word).width;
