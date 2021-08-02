@@ -1,5 +1,5 @@
 const mysql=require("mysql2");
-const client=require("../constants/client.js")
+const client=require("../constants/client.js");
 
 const db =mysql.createPool({
     user: client.config.dbUser,
