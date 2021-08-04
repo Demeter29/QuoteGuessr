@@ -24,18 +24,18 @@ exports.run = async (message, args) =>{
     .setTitle("Leaderboard")
     .addField("Highest Winstreaks:", highestWinstreakString, true)
     .addField("Highest Points:", highestPointsString, true)
-    .setColor("#05c963")
+    .setColor("#05c963");
 
-    message.channel.send(leaderboardEmbed)
+    message.channel.send(leaderboardEmbed);
 }
 
 exports.config = {
     name: "leaderboard",
     adminCmd: false,
-}
+};
 
 exports.help = {
     description: "shows you the players who have the highest winstreak and points on the server.",
     usage: ["leaderboard"],
     usageHelp : [""]
-}
+};

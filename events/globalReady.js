@@ -3,7 +3,6 @@ const client=require("../constants/client.js");
 const db=require("../database/db.js");
 
 module.exports = async() => {
-    
     //make sure every guild in the database is still valid
     const fetchedGuilds = await client.shard.fetchClientValues("guilds.cache");
 
@@ -18,7 +17,7 @@ module.exports = async() => {
 
     for(guild of guildsInDB){
         if(!guildsInCache.includes(guild.id)){
-            console.log(`deleted guild:${guild.id} from db`)
+            console.log(`deleted guild:${guild.id} from db`);
             db.query(`DELETE FROM guild WHERE id='${guild.id}';`);
             db.query(`DELETE FROM message WHERE guild_id = '${guild.id}';`);
             db.query(`DELETE FROM channel WHERE guild_id = '${guild.id}';`);

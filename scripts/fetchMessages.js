@@ -6,7 +6,6 @@ const asleep = require("asleep");
  * @param {Number} amount The maximum number of messages to fetch
  * @returns An object with 2 property: messages: The array with the fetched messages; lastID: the id of the last message we fetched;
  */
-
 module.exports = async (channel, amount) =>{
     return new Promise(async (resolve, reject) =>{
         let messages = [];
@@ -28,13 +27,13 @@ module.exports = async (channel, amount) =>{
 
                 messages = messages.concat(Array.from(fetchedMessages.values()));
                 lastID = fetchedMessages.lastKey();
-                console.log(messages.length)
-                await asleep(1200); //to not get ratelimited by discord
+                console.log(messages.length);
+                await asleep(1200); //to prevent ratelimiting by discord
             } 
         }catch(error){
             reject(error);
         }   
     })
-}
+};
 
     

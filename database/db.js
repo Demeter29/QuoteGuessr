@@ -1,14 +1,14 @@
 const mysql=require("mysql2");
 const client=require("../constants/client.js");
 
-const db =mysql.createPool({
+const db = mysql.createPool({
     user: client.config.dbUser,
     password: client.config.dbPassword,
     database: client.config.dbName
-})
+});
 
 function query(sql, inserts){
-    return new Promise( (resolve) =>{ //TODO: no rejection!
+    return new Promise( (resolve) =>{ 
         db.query(sql, inserts, (err, rows) =>{        
             if(err){
                 console.log("Database error: "+err);
@@ -18,7 +18,6 @@ function query(sql, inserts){
             else resolve(rows);                               
         });
     });
-
 };
 
 exports.query = query;

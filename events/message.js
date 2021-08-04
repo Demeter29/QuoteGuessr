@@ -1,10 +1,8 @@
 const Discord = require("discord.js");
 const client=require("../constants/client.js");
 const db=require("../database/db.js");
-const { DiscordAPIError } = require("discord.js");
 
 module.exports = async (message) =>{
-
     if(client.trackedChannels.includes(message.channel.id)){
         await db.query("INSERT INTO message VALUES(?,?,?,?,?, FROM_UNIXTIME(?*0.001))", [message.id, message.author.id, message.content, message.channel.id, message.guild.id, message.createdTimestamp]);
     }
@@ -35,13 +33,11 @@ module.exports = async (message) =>{
             const notSetupEmbed=new Discord.MessageEmbed()
             .setTitle("Your server has not been set up")
             .setDescription(`Before you can play, you need to set up the server with the \`${prefix}setup\` command!`)
-            .setColor("#ff0830")
+            .setColor("#ff0830");
 
-            message.channel.send(notSetupEmbed)
-            return;
+            return message.channel.send(notSetupEmbed);
         }
     }
 
     cmd.run(message, args);
-
 }

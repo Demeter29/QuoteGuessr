@@ -1,6 +1,6 @@
 const Discord=require("discord.js");
 const db=require("../database/db.js");
-const client=require("../constants/client.js")
+const client=require("../constants/client.js");
 
 exports.run= async (message, args) =>{
     let channel;
@@ -9,9 +9,13 @@ exports.run= async (message, args) =>{
     }
     else{
         const channelMention=message.mentions.channels.first();
-        //console.log(channel.permissionOverwrites)
         if(!channelMention.viewable){
-            return message.channel.send("I can't access the channel");
+            const cantAccessEmbed=new Discord.MessageEmbed()
+            .setTitle("I can't access the channel")
+            .setDescription("I don't have permission to view that channel.")
+            .setColor("#ff0830");
+
+            return message.channel.send(cantAccessEmbed);
         }
         else{
             channel=channelMention;
@@ -28,7 +32,7 @@ exports.run= async (message, args) =>{
 
     const removeEmbed = new Discord.MessageEmbed()
     .setTitle("Channel has been removed from the game!")
-    .setColor("#05c963")
+    .setColor("#05c963");
 
     message.channel.send(removeEmbed);
 }
@@ -36,10 +40,10 @@ exports.run= async (message, args) =>{
 exports.config = {
     name:"remove",
     adminCmd: true
-}
+};
 
 exports.help = {
     description: "Removes the channel and its messages from the game.",
     usage: ["remove #channel"],
     usageHelp : [""]
-}
+};

@@ -10,7 +10,7 @@ exports.run = async (message, args) => {
 
     let users = await db.query(`SELECT author_id, count(*) AS message_count FROM message WHERE guild_id='${message.guild.id}' GROUP BY author_id, guild_id HAVING message_count>=${client.config.minimalAmountOfMessages}`).then(rows => {return rows});
     for (let i = users.length - 1; i >= 0; i--) {
-        if((message.guild.members.resolve(users[i]["author_id"]) == null) || (message.guild.members.resolve(users[i]["author_id"]).user.bot)) { //
+        if((message.guild.members.resolve(users[i]["author_id"]) == null) || (message.guild.members.resolve(users[i]["author_id"]).user.bot)) { 
             users.splice(i, 1);  
         }
     }
@@ -23,11 +23,10 @@ exports.run = async (message, args) => {
             const notEnoughPlayersEmbed = new Discord.MessageEmbed()
             .setTitle("Error: You don't have enough members")
             .setDescription(`You need to have atleast 3 members's messages to play the game. \n\n Try to add new channels to the game with the \`${prefix}add\` command to increase the number of messages available.`)
-            .setColor("#ff0830")
+            .setColor("#ff0830");
 
             return message.channel.send(notEnoughPlayersEmbed);
         }
-
         let randomIndex=Math.floor(Math.random() * ((users.length - 1) - 0 + 1)) + 0;
         realUserID = users[randomIndex]["author_id"];
 
@@ -42,7 +41,7 @@ exports.run = async (message, args) => {
     }
 
     const options = [];
-    options.push(realUserID)
+    options.push(realUserID);
 
     for (let i = 0; i < 2;) {
         let fakeAuthorID = users[Math.floor(Math.random() * ((users.length - 1) - 0 + 1)) + 0]["author_id"];
@@ -58,7 +57,7 @@ exports.run = async (message, args) => {
     const canvas = Canvas.createCanvas(700, 400);
     const ctx = canvas.getContext('2d');
     ctx.font = "bold 25px arial, sans-serif ";
-    ctx.fillStyle = "#c7d9df"
+    ctx.fillStyle = "#c7d9df";
 
     const background = await Canvas.loadImage("./resources/singleMessage.png");
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
@@ -83,15 +82,11 @@ exports.run = async (message, args) => {
         ctx.fillText(lines[i], 110, 90 + (i * 30));
     }
 
-    await drawAvatar(options[0], ctx, 105, 205, 48,  "#000000")
-    await drawAvatar(options[1], ctx, 105, 280, 48,  "#000000")
-    await drawAvatar(options[2], ctx, 105, 358, 48,  "#000000")
+    await drawAvatar(options[0], ctx, 105, 205, 48,  "#000000");
+    await drawAvatar(options[1], ctx, 105, 280, 48,  "#000000");
+    await drawAvatar(options[2], ctx, 105, 358, 48,  "#000000");
 
     const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'guessMessage.png');
-
-    
-
-    
 
     //buttons
     let buttonA = new disbut.MessageButton()
@@ -117,7 +112,7 @@ exports.run = async (message, args) => {
     let saveMessageButton = new disbut.MessageButton()
     .setStyle('gray')
     .setLabel('Save message')
-    .setID('saveMessage')
+    .setID('saveMessage');
 
     const guessEmbed = new Discord.MessageEmbed()
     .setAuthor("playing: " + message.member.displayName, message.author.displayAvatarURL())
@@ -138,14 +133,14 @@ exports.run = async (message, args) => {
     collector.on('collect', async button => {
         button.defer();
         if(!(button.clicker.member.id==message.member.id)){
-            collector.empty()
+            collector.empty();
             const notThePlayerEmber = new Discord.MessageEmbed()
             .setTitle("Wrong Game")
             .setDescription(`you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the \`${prefix}play\` command in the server **(not here!)**`)
-            .setColor("#ff0830")
+            .setColor("#ff0830");
+
             return button.clicker.user.send(notThePlayerEmber);
         }
-
         answer = button.id;
         collector.stop();
 
@@ -154,17 +149,12 @@ exports.run = async (message, args) => {
                 db.query(`INSERT INTO user (user_id, guild_id, single_games_played, points) VALUES('${message.member.id}', '${message.guild.id}', 1, -50)`);
             }
         });
-        
+
         if (answer == correctAnswer) {
             win();
         } else {
-            
-
             lose(correctAnswerString);
         }
-
-        
-
     });
     collector.on('end', async collected =>{
         buttonA.setDisabled();
@@ -211,12 +201,10 @@ exports.run = async (message, args) => {
         }
     });
 
-    
-
-    
 
     async function win(){
         await db.query(`UPDATE user SET single_games_won=single_games_won+1, current_winstreak = current_winstreak+1, points = points+150 WHERE guild_id='${message.guild.id}' AND user_id = '${message.member.id}'`);
+        
         let currentWinstreak, points;
         await db.query(`SELECT current_winstreak,highest_winstreak, points FROM user WHERE guild_id='${message.guild.id}' AND user_id = '${message.member.id}'`).then(rows =>{
             let rowCurrentWinstreak= rows[0]["current_winstreak"];
@@ -242,7 +230,7 @@ exports.run = async (message, args) => {
 
     async function lose(correctAnswerString){
         db.query(`UPDATE user SET current_winstreak = 0 WHERE guild_id=${message.guild.id} AND user_id = ${message.member.id}`);
-        let points= await db.query(`SELECT points FROM user WHERE user_id='${message.member.id}' AND guild_id = '${message.guild.id}'`).then(rows=>{return rows[0]["points"]} )
+        let points= await db.query(`SELECT points FROM user WHERE user_id='${message.member.id}' AND guild_id = '${message.guild.id}'`).then(rows=>{return rows[0]["points"]});
 
          const loseEmbed = new Discord.MessageEmbed()
         .setTitle("Wrong!")
@@ -271,32 +259,26 @@ exports.run = async (message, args) => {
                     const notThePlayerEmber = new Discord.MessageEmbed()
                     .setTitle("Wrong Game")
                     .setDescription(`you have recently clicked a button on someone's else game, you can only click buttons in your own game. To start a game use the \`${prefix}play\` command in the server **(not here!)**`)
-                    .setColor("#ff0830")
+                    .setColor("#ff0830");
+
                     return button.clicker.user.send(notThePlayerEmber);
                 }
-    
                 let phantomMessage=button.message;
                 phantomMessage.member = button.clicker;
                 phantomMessage.author = button.clicker.user;
                 client.commands.get("play").run(phantomMessage);
             }
             else{   //save Message
-
                 saveMessageButton.setDisabled();
                 endMessage.edit( {embed: embedWithoutButtons, buttons: [playAgainButton, saveMessageButton]});
 
                 const canvas = Canvas.createCanvas(700, 200);
-
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = "#32353b"
+                ctx.fillStyle = "#32353b";
                 void ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "#dcdad9"
+                ctx.fillStyle = "#dcdad9";
 
-
-                //const background = await Canvas.loadImage("./resources/singleMessage.png");
-                //ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-                await drawAvatar(realUserID, ctx, 55, 45, 55, "#dcdad9")
+                await drawAvatar(realUserID, ctx, 55, 45, 55, "#dcdad9");
                 ctx.font = "bold 25px arial, sans-serif ";
 
                 for (i = 0; i < lines.length; i++) {
@@ -305,25 +287,21 @@ exports.run = async (message, args) => {
 
                 ctx.font = "bold 20px arial, sans-serif ";
                 const date = "-"+randomMessage["time"].toDateString();
-               // const dateString = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`
                 ctx.fillText(date, 500, 180);
                 const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'savedMessage.png');
                 
                 const saveMessageEmbed = new Discord.MessageEmbed()
                 .attachFiles(attachment)
                 .setImage('attachment://savedMessage.png');
-                message.channel.send(saveMessageEmbed)
-            }
-
-            
+                message.channel.send(saveMessageEmbed);
+            }         
         });
+
         collector.on('end', () =>{
             playAgainButton.setDisabled();
             saveMessageButton.setDisabled();
             endMessage.edit( {embed: embedWithoutButtons, buttons: [playAgainButton, saveMessageButton]});
-
-        });
-        
+        });    
     }
 
     function shuffleArray(array) {
@@ -366,20 +344,19 @@ exports.run = async (message, args) => {
         lines.push(currentLine);
         return lines;
     }
-
-}
+};
 
 exports.config = {
     name: "play",
     adminCmd: false,
-}
+};
 
 exports.help = {
-    description: "The bot shows you a message from the server and you have to guess which user said that. You will see the letters A, B or C next to them, simply respond with the correct letter and you win if you guess the correct person!",
+    description: "The bot will show you a message from this server and you'll have to guess which user said that. You will see the letters A, B or C next to them, simply click the button with the correct letter and you will win if you guessed the correct person!",
     usage: [
         "play"
     ],
     usageHelp: [
         ""
     ]
-}
+};

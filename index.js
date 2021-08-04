@@ -7,13 +7,13 @@ const fs=require("fs");
 async function init(){
     client.commands = new Discord.Collection();
     const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-    commandFiles.forEach(file => {
+    commandFiles.forEach(file =>{
         const command = require(`./commands/${file}`);
         client.commands.set(command.config.name, command);
     });
 
     const eventFiles = fs.readdirSync("./events/").filter(file => file.endsWith('.js'));
-    eventFiles.forEach(file => {
+    eventFiles.forEach(file =>{
         const eventName = file.split(".")[0];
         const event = require(`./events/${file}`);
         client.on(eventName, event.bind(null));
@@ -32,6 +32,3 @@ process.on("unhandledRejection" , ( err ) => console.error( err ) );
 process.on("uncaughtException"  , ( err ) => console.error( err ) );
 
 client.login(client.config.token);
-
-
-

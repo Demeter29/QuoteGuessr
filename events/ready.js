@@ -17,7 +17,6 @@ module.exports = async() => {
         client.guildPrefixes.set(guild.id, prefix);
       }
     });
-
   }
 
   //channels
