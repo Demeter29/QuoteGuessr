@@ -144,9 +144,9 @@ exports.run = async (message, args) => {
         answer = button.id;
         collector.stop();
 
-        await db.query(`UPDATE user SET single_games_played=single_games_played+1, points = points-50 WHERE user_id='${message.author.id}' AND guild_id='${message.guild.id}'`).then(results => {
+        await db.query(`UPDATE user SET single_games_played=single_games_played+1, points = points-50 WHERE user_id='${message.author.id}' AND guild_id='${message.guild.id}'`).then(async results => {
             if (results.affectedRows === 0) {
-                db.query(`INSERT INTO user (user_id, guild_id, single_games_played, single_games_won, current_winstreak, highest_winstreak, points) VALUES('${message.member.id}', '${message.guild.id}', 1, 0, 0, 0, -50)`);
+                await db.query(`INSERT INTO user (user_id, guild_id, single_games_played, single_games_won, current_winstreak, highest_winstreak, points) VALUES('${message.member.id}', '${message.guild.id}', 1, 0, 0, 0, -50)`);
             }
         });
 
