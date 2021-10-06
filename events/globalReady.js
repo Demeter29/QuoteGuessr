@@ -15,6 +15,7 @@ module.exports = async() => {
 
     const guildsInDB = await db.query(`SELECT id FROM guild;`).then(rows =>{ return rows});
 
+    /* sometimes this would delete valid servers too.
     for(guild of guildsInDB){
         if(!guildsInCache.includes(guild.id)){
             console.log(`deleted guild:${guild.id} from db`);
@@ -24,6 +25,7 @@ module.exports = async() => {
             db.query(`DELETE FROM user WHERE guild_id = '${guild.id}';`);
         }
     }
+    */
 
     //make sure every channel in the database is still valid
     const fetchedChannels = await client.shard.fetchClientValues("channels.cache");
@@ -37,6 +39,7 @@ module.exports = async() => {
 
     const channelsInDB = await db.query(`SELECT id FROM channel;`).then(rows =>{ return rows});
 
+    /* same with guilds, this would sometimes delelte wrong channels
     for(channel of channelsInDB){
         if(!channelsInCache.includes(channel.id)){
             console.log(`deleted channel:${guild.id} from db`);
@@ -44,6 +47,7 @@ module.exports = async() => {
             db.query(`DELETE FROM message WHERE channel_id = '${channel.id}';`);
         }
     }
+    */
 
     console.log("Quote Guessr is ready");
 };
